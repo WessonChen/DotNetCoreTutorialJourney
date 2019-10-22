@@ -5,6 +5,13 @@
 This repository is created based on **[ASP.NET core tutorial for beginners](https://www.youtube.com/playlist?list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU)** 
 by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 
+# Table of Contents
+1. [Ep 6 - .Net Core in process hosting](#ep-6---net-core-in-process-hosting)
+2. [Ep 7 - .Net Core out of process hosting](#ep-7---net-core-out-of-process-hosting)
+3. [Ep 8 - .Net Core launchsettings json file](#ep-8---net-core-launchsettings-json-file)
+4. [Ep 9 - .Net Core appsetting json file](#ep-9---net-core-appsetting-json-file)
+5. [Ep 10 - Middleware in .NET Core](#ep-10---middleware-in-net-core)
+
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
 
@@ -147,7 +154,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 ```         
 In this case, **DeveloperExceptionPage** is only displayed if the environment is **Development**.
 
-#### Ep 9 - [.Net Core launchsettings json file](https://www.youtube.com/watch?v=m_BevGi7zBw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=9)
+#### Ep 9 - [.Net Core appsetting json file](https://www.youtube.com/watch?v=m_BevGi7zBw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=9)
 
 In previous versions of ASP.NET, we store application configuration settings, like database connection strings for example, in **web.config file**. 
 In ASP.NET Core application configuration settings can come from the following **different configurations sources**. 
@@ -212,7 +219,7 @@ even add your own custom configuration sources in addition to all the existing c
 
 #### Ep 10 - [Middleware in .NET Core](https://www.youtube.com/watch?v=ALu4jtvjSYw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=10)
 
-#####What is Middleware in ASP.NET Core
+##### What is Middleware in ASP.NET Core
 In ASP.NET Core, Middleware is a piece of software that can handle an HTTP request or response. 
 A given middleware component in ASP.NET Core has a very specific purpose. 
 For example we may have a middleware component that authenticates a user, another piece of middleware to handle errors, 
