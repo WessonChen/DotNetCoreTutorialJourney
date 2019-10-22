@@ -11,6 +11,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 3. [Ep 8 - .Net Core launchsettings json file](#ep-8---net-core-launchsettings-json-file)
 4. [Ep 9 - .Net Core appsetting json file](#ep-9---net-core-appsetting-json-file)
 5. [Ep 10 - Middleware in .NET Core](#ep-10---middleware-in-net-core)
+6. [Ep 11 - Configure ASP NET Core request processing pipeline](#ep-11---configure-asp-net-core-request-processing-pipeline)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -39,6 +40,8 @@ We can display `System.Diagnostics.Process.GetCurrentProcess().ProcessName`
 
 InProcess hosting delivers significantly higher request throughput than OutOfProcess hosting.
 
+##### [Back to Table of Contents](#table-of-contents)
+
 #### Ep 7 - [.Net Core out of process hosting](https://www.youtube.com/watch?v=QsXsOX6qq2c&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=7)
 
 Out of process using 2 Web Servers - Internal and External Web Server
@@ -63,6 +66,8 @@ In Process | Out of Process
 Process name is w3wp.exe or iisexpress.exe | Process name is dotnet.exe
 Only one web server | Two web servers
 Better for performance | Penalty of proxying requests between internal and external web server
+
+##### [Back to Table of Contents](#table-of-contents)
 
 #### Ep 8 - [.Net Core launchsettings json file](https://www.youtube.com/watch?v=u2S4TkkACVc&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=8)
 
@@ -154,6 +159,8 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 ```         
 In this case, **DeveloperExceptionPage** is only displayed if the environment is **Development**.
 
+##### [Back to Table of Contents](#table-of-contents)
+
 #### Ep 9 - [.Net Core appsetting json file](https://www.youtube.com/watch?v=m_BevGi7zBw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=9)
 
 In previous versions of ASP.NET, we store application configuration settings, like database connection strings for example, in **web.config file**. 
@@ -217,6 +224,8 @@ The following is the **default order** in which the various configuration source
 You can change this order if you want to or 
 even add your own custom configuration sources in addition to all the existing configuration sources.
 
+##### [Back to Table of Contents](#table-of-contents)
+
 #### Ep 10 - [Middleware in .NET Core](https://www.youtube.com/watch?v=ALu4jtvjSYw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=10)
 
 ##### What is Middleware in ASP.NET Core
@@ -275,6 +284,10 @@ Care should be taken to add the middleware in the right order, otherwise the app
 
 **The middleware components are available as NuGet packages**.
 This means updates are now handled by NuGet, providing the ability to update each middleware separately. 
+
+##### [Back to Table of Contents](#table-of-contents)
+
+#### Ep 11 - [Configure ASP NET Core request processing pipeline](https://www.youtube.com/watch?v=nt6anXAwfYI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=11)
 
 
 
