@@ -557,11 +557,13 @@ If `ASPNETCORE_ENVIRONMENT` is not set, it defaults to `Production`.
 Also, we can have customised environment like `Staging_1`, then we can use the code below.
 
 ```C#
-if (env.IsEnvironment("Staging_1"))
+if (env.IsEnvironment("Staging_1") || env.IsDevelopment())
+{
     app.UseDeveloperExceptionPage();
+}
 ```
 
-**Why do we need different Development Environments like Development, Staging, Production etc. **
+**Why do we need different Development Environments like Development, Staging, Production etc.**
 
 **Development Environment**: We software developers typically use this environment for our day to day development work. 
 We want non-minified JavaScript and CSS files to be loaded on a development environment for ease of debugging. 
@@ -577,6 +579,7 @@ If there is an unhandled exception, display user friendly error page instead of 
 So load minified JavaScript and CSS files to improve the performance. For better security, display a User Friendly Error Page instead of the Developer Exception Page.
 
 **Configuring `ASPNETCORE_ENVIRONMENT` variable**
+
 On our local development machine we usually set this environment variable in `launchsettings.json` file.
 However, this file will not be loaded when we publish the project.
 
