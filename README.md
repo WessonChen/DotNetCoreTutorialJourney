@@ -289,6 +289,193 @@ This means updates are now handled by NuGet, providing the ability to update eac
 
 #### Ep 11 - [Configure ASP NET Core request processing pipeline](https://www.youtube.com/watch?v=nt6anXAwfYI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=11)
 
+As part of the application startup, `Configure()` method sets up the request processing pipeline. 
+
+```C#
+public class Startup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+    }
+
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+
+        app.Run(async (context) =>
+        {
+            await context.Response.WriteAsync("Hello World!");
+        });
+    }
+}
+```
+
+**At the moment we have 2 middlewares in the pipeline**
+- `UseDeveloperExceptionPage()` and
+- another middleware that is registered using the `Run()` method. 
+
+**UseDeveloperExceptionPage Middleware**: As the name implies, this middleware responds with the developer exception page, 
+if there is an exception and if the environment is Development.
+
+The second middleware that is registered using the `Run()` method, can only write a message to the Response object.
+Which means the previous write will be covered by the last one.
+
+**Code Explanation**
+- We are using `Run()` method to add middleware to our application's request processing pipeline
+- If you hover the mouse over the `Run()` method, from the intellisense you can see that this `Run()` method is implemented 
+as an extension method of `IApplicationBuilder` interface. This is the reason we are able to invoke this `Run()` method on `IApplicationBuilder` object `app`.
+- The parameter that we are passing to the `Run()` method is a `RequestDelegate` which we can see from the intellisense.
+- `RequestDelegate` is a delegate that has `HttpContext` object as a parameter. 
+- It is through this `HttpContext` object, the middleware gains access to both the incoming http request and outgoing http response.
+- At the moment, we are passing request delegate inline as an anonymous method using a lambda.
+- Instead of passing the request delegate inline as an anonymous method, we can define the request delegate in a separate reusable class.
+- With this `Run()` extension method we can only add a **terminal middleware** to the request pipeline.
+- A terminal middleware is a middleware that **does not call the next middleware** in the pipeline
+
+**Consider the following code**
+```C#
+app.Run(async (context) =>
+{
+    await context.Response.WriteAsync("Hello from 1st Middleware");
+});
+
+app.Run(async (context) =>
+{
+    await context.Response.WriteAsync("Hello from 2nd Middleware");
+});
+```
+
+- We have 2 middlewares registered using the `Run()` method
+- Upon running this project, we only see the response from the first middleware
+- We do not see the response from the second middleware
+- This is because, a middleware that is registered using the `Run()` method cannot call the next middleware in the pipeline
+- So, the middleware that we register using `Run()` method is a terminal middleware
+
+If you want your middleware to be able to call the next middleware in the pipeline, then register the middleware using `Use()` method as shown below. 
+```C#
+app.Use(async (context, next) =>
+{
+    await context.Response.WriteAsync("Hello from 1st Middleware");
+    await next();
+});
+
+app.Run(async (context) =>
+{
+    await context.Response.WriteAsync("Hello from 2nd Middleware");
+});
+```
+
+Notice, `Use()` method has 2 parameters. The first parameter is the `HttpContext` context object 
+and the second parameter is the `Func` type i.e it is a generic delegate that represents the next middleware in the pipeline.
+
+```C#
+public void Configure(IApplicationBuilder app, IHostingEnvironment env,
+                ILogger<Startup> logger)
+{
+    app.Use(async (context, next) =>
+    {
+        logger.LogInformation("MW1: Incoming Request");
+        await next();
+        logger.LogInformation("MW1: Outgoing Response");
+    });
+
+    app.Use(async (context, next) =>
+    {
+        logger.LogInformation("MW2: Incoming Request");
+        await next();
+        logger.LogInformation("MW2: Outgoing Response");
+    });
+
+    app.Run(async (context) =>
+    {
+        await context.Response.WriteAsync("MW3: Request handled and response produced");
+        logger.LogInformation("MW3: Request handled and response produced");
+    });
+}
+```
+
+- `ILogger<Startup>` is injected into the `Configure()` method
+- `CreateDefaultBuilder()` that is called by the `Main()` method configures logging
+- You will see that, the information is logged in the following order
+  - MW1: Incoming Request
+  - MW2: Incoming Request
+  - MW3: Request handled and response produced
+  - MW2: Outgoing Response
+  - MW1: Outgoing Response
+
+  Now relate the above output, with the following diagram from MSDN to understand what's happening.
+
+<p align="center"> 
+  <img src="https://i.ibb.co/61rPnLJ/request-delegate-pipeline.png">
+</p>
+
+##### [Back to Table of Contents](#table-of-contents)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
