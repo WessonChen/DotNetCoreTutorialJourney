@@ -15,6 +15,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 7. [Ep 12 - Static files in .NET Core](#ep-12---static-files-in-net-core)
 8. [Ep 13 - .NET Core developer exception page](#ep-13---net-core-developer-exception-page)
 9. [Ep 14 - .NET Core environment variables](#ep-14---net-core-environment-variables)
+10. [Ep 15 - .NET Core MVC](#ep-15---net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -545,6 +546,46 @@ Because the pipeline might be reversed before the `UseDeveloperExceptionPage()`.
 ##### [Back to Table of Contents](#table-of-contents)
 
 #### Ep 14 - [.Net Core environment variables](https://www.youtube.com/watch?v=x8jNX1nb_og&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=14)
+
+In most software development organisations we typically have the following development environments. 
+- Development
+- Staging
+- Production
+
+If `ASPNETCORE_ENVIRONMENT` is not set, it defaults to `Production`.
+
+Also, we can have customised environment like `Staging_1`, then we can use the code below.
+
+```C#
+if (env.IsEnvironment("Staging_1"))
+    app.UseDeveloperExceptionPage();
+```
+
+**Why do we need different Development Environments like Development, Staging, Production etc. **
+
+**Development Environment**: We software developers typically use this environment for our day to day development work. 
+We want non-minified JavaScript and CSS files to be loaded on a development environment for ease of debugging. 
+Similarly we want developer exception page if there is an unhandled exception so we can understand the root cause of the exception and fix it if required. 
+
+**Staging Environment**: Many organisations, try to keep their staging environment as identical as possible to the actual production environment. 
+The primary reason for this environment is to identify any deployment related issues. Also, if you are developing a B2B (Business to Business) application, 
+you may be interfacing with other service provider systems. Many organisations, usually setup their staging environment to interface with the service providers as well, 
+for complete end to end testing. We usually do not troubleshoot and debug on a staging environment, so for better performance we want minified JavaScript and CSS files to be loaded. 
+If there is an unhandled exception, display user friendly error page instead of the developer exception page. A user friendly error page will not contain any technical details. 
+
+**Production Environment**: The actual live environment, that we use for day to day business. Production environment should be configured for maximum security and performance. 
+So load minified JavaScript and CSS files to improve the performance. For better security, display a User Friendly Error Page instead of the Developer Exception Page.
+
+**Configuring `ASPNETCORE_ENVIRONMENT` variable**
+On our local development machine we usually set this environment variable in `launchsettings.json` file.
+However, this file will not be loaded when we publish the project.
+
+We can also set it on a Operating system, like `Windows`, `macOS` or `Linux`.
+For more information, we can check [Use multiple environments in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments?view=aspnetcore-2.1)
+
+##### [Back to Table of Contents](#table-of-contents)
+
+#### Ep 15 - [.Net Core MVC](https://www.youtube.com/watch?v=f72ookCWhsQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=15)
 
 
 
