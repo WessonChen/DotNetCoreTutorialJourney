@@ -745,7 +745,7 @@ This HTML is then sent over the network to the user who made the request.
 ```C#
 public void ConfigureServices(IServiceCollection services)
 {
-	services.AddMvc();
+    services.AddMvc();
 }
 ```
 
@@ -760,23 +760,23 @@ is the source code of `AddMvc()` method
 ```C#
 public static IMvcBuilder AddMvc(this IServiceCollection services)
 {
-	if (services == null)
+    if (services == null)
     {
-		throw new ArgumentNullException(nameof(services));
-	}
+	throw new ArgumentNullException(nameof(services));
+    }
 
-	var builder = services.AddMvcCore();
+    var builder = services.AddMvcCore();
 
-	builder.AddApiExplorer();
-	builder.AddAuthorization();
+    builder.AddApiExplorer();
+    builder.AddAuthorization();
 
-	AddDefaultFrameworkParts(builder.PartManager);
+    AddDefaultFrameworkParts(builder.PartManager);
 
-	builder.AddFormatterMappings();
-	builder.AddViews();
-	builder.AddRazorViewEngine();
-	builder.AddRazorPages();
-	builder.AddCacheTagHelper();
+    builder.AddFormatterMappings();
+    builder.AddViews();
+    builder.AddRazorViewEngine();
+    builder.AddRazorPages();
+    builder.AddCacheTagHelper();
     builder.AddDataAnnotations(); // +1 order
     builder.AddJsonFormatters();
     builder.AddCors();
@@ -794,21 +794,21 @@ is the source code of `AddMvcCore()` method
 ```C#
 public static IMvcCoreBuilder AddMvcCore(this IServiceCollection services)
 {
-	if (services == null)
-	{
-		throw new ArgumentNullException(nameof(services));
-	}
+    if (services == null)
+    {
+	throw new ArgumentNullException(nameof(services));
+    }
 
-	var partManager = GetApplicationPartManager(services);
-	services.TryAddSingleton(partManager);
+    var partManager = GetApplicationPartManager(services);
+    services.TryAddSingleton(partManager);
 
-	ConfigureDefaultFeatureProviders(partManager);
-	ConfigureDefaultServices(services);
-	AddMvcCoreServices(services);
+    ConfigureDefaultFeatureProviders(partManager);
+    ConfigureDefaultServices(services);
+    AddMvcCoreServices(services);
 
-	var builder = new MvcCoreBuilder(services, partManager);
+    var builder = new MvcCoreBuilder(services, partManager);
 
-	return builder;
+    return builder;
 }
 ```
 
@@ -857,11 +857,11 @@ Add Controllers folder, in the root project folder. In the "Controllers" add a n
 ```C#
 public class HomeController : Controller
 {
-	// GET: /<controller>/
-	//public IActionResult Index()
+    // GET: /<controller>/
+    //public IActionResult Index()
     //{
     //    return View();
-	//}
+    //}
 
     public string Index()
     {
