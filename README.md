@@ -738,22 +738,141 @@ This HTML is then sent over the network to the user who made the request.
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 16 - [Setup MVC in .Net Core](https://www.youtube.com/watch?v=KQH51Yip0K0&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=16)
 
+**Step 1**: In `ConfigureServices()` method of the `Startup` class in `Startup.cs` file, include `services.AddMvc();`.
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+	services.AddMvc();
+}
+```
 
+**The difference between `services.AddMvc()` and `services.AddMvcCore()` here is**:
+- `AddMvcCore()` method only adds the core MVC services
+- `AddMvc()` method adds all the required MVC services
+- `AddMvc()` method calls `AddMvcCore()` method internally
 
+[Here](https://github.com/aspnet/Mvc/blob/master/src/Microsoft.AspNetCore.Mvc/MvcServiceCollectionExtensions.cs)
+is the source code of `AddMvc()` method
 
+```C#
+public static IMvcBuilder AddMvc(this IServiceCollection services)
+{
+	if (services == null)
+    {
+		throw new ArgumentNullException(nameof(services));
+	}
 
+	var builder = services.AddMvcCore();
 
+	builder.AddApiExplorer();
+	builder.AddAuthorization();
 
+	AddDefaultFrameworkParts(builder.PartManager);
 
+	builder.AddFormatterMappings();
+	builder.AddViews();
+	builder.AddRazorViewEngine();
+	builder.AddRazorPages();
+	builder.AddCacheTagHelper();
+    builder.AddDataAnnotations(); // +1 order
+    builder.AddJsonFormatters();
+    builder.AddCors();
 
+    return new MvcBuilder(builder.Services, builder.PartManager);
+}
+```
 
+As we can see, the `AddMvc(this IServiceCollection services)` method called `services.AddMvcCore()` first,
+then it also called other services, including `AddViews()` which allows the Controller returns an **HTML View**.
 
+And [Here](https://github.com/aspnet/Mvc/blob/1521f9298bc44e70d0fc5f9bc0814e101bbcc479/src/Microsoft.AspNetCore.Mvc.Core/DependencyInjection/MvcCoreServiceCollectionExtensions.cs)
+is the source code of `AddMvcCore()` method
 
+```C#
+public static IMvcCoreBuilder AddMvcCore(this IServiceCollection services)
+{
+	if (services == null)
+	{
+		throw new ArgumentNullException(nameof(services));
+	}
 
+	var partManager = GetApplicationPartManager(services);
+	services.TryAddSingleton(partManager);
 
+	ConfigureDefaultFeatureProviders(partManager);
+	ConfigureDefaultServices(services);
+	AddMvcCoreServices(services);
 
+	var builder = new MvcCoreBuilder(services, partManager);
+
+	return builder;
+}
+```
+
+As we can see, the `AddMvcCore(this IServiceCollection services)` method called `AddMvcCoreServices(services)` only,
+no other service has been called.
+
+**Step 2**: In the `Configure()` method, add `UseMvcWithDefaultRoute()` midddleware to our application's request processing pipeline.
+
+```C#
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
+
+    app.UseStaticFiles();
+    app.UseMvcWithDefaultRoute();
+
+    app.Run(async (context) =>
+    {
+        await context.Response.WriteAsync("Hello World!");
+    });
+}
+```
+
+The `UseMvcWithDefaultRoute()` means useing MVC with route which follows format like '{controller=Home}/{action=Index}/{id?}'
+
+Notice, we placed `UseStaticFiles()` middleware before `UseMvcWithDefaultRoute()` middleware. 
+This order is important, because if the request is for a static file like an image, css or JavaScript file, 
+then `UseStaticFiles()` middleware will handle the request and short-circuit the rest of the pipeline. 
+
+So if the request is for a static file, `UseMvcWithDefaultRoute()` middleware is not executed, there by avoiding the unnecessary processing.  
+
+On the other hand, if the request is an MVC request, `UseStaticFiles()` middleware will pass that request to `UseMvcWithDefaultRoute()` middleware 
+which will handle the request and produces the response. 
+
+if we run the project now, the browser will display `"Hello World!"`. Because the `URL-http://localhost:xxxxx` will be routed to `http://localhost:xxxx/Home/Index` 
+as we mentioned before, and it is not exist. And then the `app.UseMvcWithDefaultRoute()` will pass the request to the next middleware which is `app.Run`.
+We can delete the `app.Run` now. Because a `404 error` makes more sense than `"Hello World!"`.
+
+**Add HomeController**
+
+Add Controllers folder, in the root project folder. In the "Controllers" add a new Controller. Make the code like this.
+
+```C#
+public class HomeController : Controller
+{
+	// GET: /<controller>/
+	//public IActionResult Index()
+    //{
+    //    return View();
+	//}
+
+    public string Index()
+    {
+        return "Hello from Controller";
+    }
+}
+```
+
+We commented the default `IActionResult` because it returns the `View()`, and we do not have a `View()` yet. Let's return a string for now.
+
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
