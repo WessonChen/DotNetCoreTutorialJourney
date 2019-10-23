@@ -13,6 +13,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 5. [Ep 10 - Middleware in .NET Core](#ep-10---middleware-in-net-core)
 6. [Ep 11 - Configure .NET Core request processing pipeline](#ep-11---configure-asp-net-core-request-processing-pipeline)
 7. [Ep 12 - Static files in .NET Core](#ep-12---static-files-in-net-core)
+8. [Ep 13 - .NET Core developer exception page](#ep-13---net-core-developer-exception-page)
+9. [Ep 14 - .NET Core environment variables](#ep-14---net-core-environment-variables)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -505,9 +507,44 @@ UseFileServer | FileServerOptions
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 13 - [.Net Core developer exception page](https://www.youtube.com/watch?v=UGG2-oV9iQ8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=13)
 
+Consider the following code in `Configure()` method in `Startup` class 
+```C#
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
 
+    app.UseFileServer();
 
+    app.Run(async (context) =>
+    {
+        throw new Exception("Some error processing the request");
+        await context.Response.WriteAsync("Hello World!");
+    });
+}
+```
+
+If we run the code we do not see the exception. Because `UseFileServer()` middleware combines the function of 
+`UseDefaultFiles()` and `UseStaticFiles()`. Which means the `http://localhost:xxxxx` is handled by `UseFileSever()`
+and the pipeline **reverses** from here.
+
+However, if we issue a request to `http://localhost:xxxx/abcdef.html`, we see the exception as expected.
+Because the `UseFileServer()` will not find the file with name `abcdef.html`. It gives control to the next middleware in the pipeline, 
+which in our case is the `Run()` method, which throws an exception.
+
+Also, we can customise `UseDeveloperExceptionPage()` using the respective OPTIONS object, which in this case is `DeveloperExceptionPageOptions`.
+
+Notice that `UseDeveloperExceptionPage()` middleware must be plugged into the request processing pipeline as early as possible, 
+so it can handle the exception and display the Developer Exception Page if the subsequent middleware components in the pipeline raises an exception.
+Because the pipeline might be reversed before the `UseDeveloperExceptionPage()`.
+
+##### [Back to Table of Contents](#table-of-contents)
+
+#### Ep 14 - [.Net Core environment variables](https://www.youtube.com/watch?v=x8jNX1nb_og&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=14)
 
 
 
