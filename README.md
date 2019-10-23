@@ -11,7 +11,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 3. [Ep 8 - .Net Core launchsettings json file](#ep-8---net-core-launchsettings-json-file)
 4. [Ep 9 - .Net Core appsetting json file](#ep-9---net-core-appsetting-json-file)
 5. [Ep 10 - Middleware in .NET Core](#ep-10---middleware-in-net-core)
-6. [Ep 11 - Configure ASP NET Core request processing pipeline](#ep-11---configure-asp-net-core-request-processing-pipeline)
+6. [Ep 11 - Configure .NET Core request processing pipeline](#ep-11---configure-asp-net-core-request-processing-pipeline)
+7. [Ep 12 - Static files in .NET Core](#ep-12---static-files-in-net-core)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -277,7 +278,7 @@ For example, if the request is for a static file like an image or css file, the 
 This means in our case, the StaticFiles middleware will not call the MVC middleware if the request is for a static file.
 
 **A middleware component may handle an incoming HTTP request by generating an HTTP response**.
-For example, mvcmiddleware in the pipeline handles a request to the URL `/employees` and returns a list of employees. 
+For example, mvcmiddleware in the pipeline handles a request to the `URL` `/employees` and returns a list of employees. 
 
 **Middleware components are executed in the order they are added to the pipeline**.
 Care should be taken to add the middleware in the right order, otherwise the application may not function as expected. 
@@ -287,7 +288,7 @@ This means updates are now handled by NuGet, providing the ability to update eac
 
 ##### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 11 - [Configure ASP NET Core request processing pipeline](https://www.youtube.com/watch?v=nt6anXAwfYI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=11)
+#### Ep 11 - [Configure .NET Core request processing pipeline](https://www.youtube.com/watch?v=nt6anXAwfYI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=11)
 
 As part of the application startup, `Configure()` method sets up the request processing pipeline. 
 
@@ -414,18 +415,95 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env,
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 12 - [Static files in .Net Core](https://www.youtube.com/watch?v=yt6bzZoovgM&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=12)
 
+**Static Files**
+- By default, an asp.net core application will not serve static files
+- The default directory for static files is wwwroot and this directory must be in the root project folder
 
+We can access files in wwwroot from the browser by using `http://{serverName}/{fileName}`
 
+Also, if we created folder under wwwroot, we can use `http://{serverName}/{folderName}/{fileName}`
 
+In our case we are running on our local machine, so the `{serverName}` should be `localhost:xxxxx`
 
+However, when we use the `URL` above, the file does not show up. 
+This is because, at the moment our application request processing pipeline does not have the required middleware that can serve static files. 
+The middleware that we need is `UseStaticFiles()` middleware.  
 
+Modify the code in `Configure()` method to add `UseStaticFiles()` middleware to our application's request processing pipeline as shown below. 
 
+```C#
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    } 
 
+    // Add Static Files Middleware
+    app.UseStaticFiles(); 
 
+    app.Run(async (context) =>
+    {
+        await context.Response.WriteAsync("Hello World!");
+    });
+}
+```
 
+To serve a default document like `default.html` or `index.html` when users visit `http://{serverName}/,
+We can use `UseDefaultFiles()` middleware in our application's request processing pipeline. 
 
+```C#
+// Add Default Files Middleware
+app.UseDefaultFiles();
+// Add Static Files Middleware
+app.UseStaticFiles(); 
+```
 
+`UseDefaultFiles()` **must be called before** `UseStaticFiles()` to serve the default file. 
+`UseDefaultFiles()` is a `URL` rewriter that **doesn't** actually serve the file. 
+It simply rewrites the `URL` to the default document which will then be served by the Static Files Middleware
+
+If you want to use another document like `home.html` for example as your default document, you can do so using the following code. 
+
+```C#
+// Specify foo.html as the default document
+DefaultFilesOptions defaultFilesOptions = new DefaultFilesOptions();
+defaultFilesOptions.DefaultFileNames.Clear();
+defaultFilesOptions.DefaultFileNames.Add("home.html");
+// Add Default Files Middleware
+app.UseDefaultFiles(defaultFilesOptions);
+// Add Static Files Middleware
+app.UseStaticFiles(); 
+```
+
+**UseFileServer Middleware **
+`UseFileServer()` combines the functionality of `UseStaticFiles()`, `UseDefaultFiles()` and `UseDirectoryBrowser()` middleware. 
+`DirectoryBrowser()` middleware, enables directory browsing and allows users to see files within a specified directory. 
+We could replace `UseStaticFiles()` and `UseDefaultFiles()` middlewares with `UseFileServer()` Middleware. 
+
+```C#
+// Use UseFileServer instead of UseDefaultFiles & UseStaticFiles
+FileServerOptions fileServerOptions = new FileServerOptions();
+fileServerOptions.DefaultFilesOptions.DefaultFileNames.Clear();
+fileServerOptions.DefaultFilesOptions.DefaultFileNames.Add("home.html");
+app.UseFileServer(fileServerOptions);
+```
+
+The important point to note here is the pattern that we use to add middleware to our application's request processing pipeline. 
+In most cases we add middleware using the extension methods that start with the word `Use`.
+
+If you want to customise these middleware components, we use the respective OPTIONS object.
+
+Middleware | Options Object
+:---: | :---:
+UseDeveloperExceptionPage | DeveloperExceptionPageOptions
+UseDefaultFiles | DefaultFilesOptions
+UseStaticFiles | StaticFileOptions
+UseFileServer | FileServerOptions
+
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
