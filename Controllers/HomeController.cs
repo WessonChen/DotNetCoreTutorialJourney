@@ -24,9 +24,9 @@ namespace DotNetCoreTutorialJourney.Controllers
         {
             _employeeRepository = employeeRepository;
         }
-        public string Index()
+        public ViewResult Index()
         {
-            return _employeeRepository.GetEmployee(1).Name;
+            return View(_employeeRepository.GetAllEmployee());
         }
 
         public ViewResult Details()

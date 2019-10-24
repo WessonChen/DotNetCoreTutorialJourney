@@ -25,6 +25,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 17. [Ep 24 - ViewBag in .Net Core MVC](#ep-24---viewbag-in-net-core-mvc)
 18. [Ep 25 - Strongly Typed View in .Net Core MVC](#ep-25---strongly-typed-view-in-net-core-mvc)
 19. [Ep 26 - ViewModel in .Net Core MVC](#ep-26---viewModel-in-net-core-mvc)
+20. [Ep 27 - List View in .Net Core MVC](#ep-27---list-view-in-net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1359,7 +1360,7 @@ So always use a strongly typed view to pass data from a controller to a view.
 
 **Why do we need a ViewModel**
 
-In some cases, a model object may not contain all the data a view needs. This is when we create a `ViewModel` as a **Data Transfer Objects*. 
+In some cases, a model object may not contain all the data a view needs. This is when we create a `ViewModel` as a **Data Transfer Objects**. 
 It contains all the data a view needs. For example
 
 ```C#
@@ -1432,22 +1433,132 @@ Last, in view, we can do
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 27 - [List view in .Net Core MVC](https://www.youtube.com/watch?v=nHAMDUtiV6w&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=27)
 
+If we want to display a list of objects, we can use **`IEnumerable<T>`**
 
+The difference between `IEnumerable<T>` and `List<T>`
 
+1. `IEnumerable<T>` is read-only
 
+<p align="center">
+  <img src="https://i.ibb.co/x1sw8Mm/IEnumerable-vs-List.png">
+</p>
+<p align="center">
+  <img src="https://i.ibb.co/K9Ms9ct/IEnumerable-vs-List-2.png">
+</p>
 
+2. `IEnumerable<T>` describes behavior, while `List<T>` is an implementation of that behavior. 
+If we use `IEnumerable<T>`, we get the opportunity to replace it with any generic type that inherits from it. 
+It can be a `List<T>`, `Stack<T>`, `Queue<T>`, `LinkedList<T>` or `HashSet<T>` depending upon the requirement. 
 
+3. When you use `IEnumerable<T>`, you give the compiler a chance to defer work until later, possibly optimizing along the way. 
+If you use `List()` you **force the compiler to reify the results right away**. For example
 
+```C#
+public IEnumerable<Animals> AllSpotted()
+{
+    return from a in Zoo.Animals
+           where a.coat.HasSpots == true
+           select a;
+}
 
+public IEnumerable<Animals> Feline(IEnumerable<Animals> sample)
+{
+    return from a in sample
+           where a.race.Family == "Felidae"
+           select a;
+}
 
+public IEnumerable<Animals> Canine(IEnumerable<Animals> sample)
+{
+    return from a in sample
+           where a.race.Family == "Canidae"
+           select a;
+}
+```
 
+Now you have a method that selects an initial sample ("AllSpotted"), plus some filters. So now you can do this:
 
+```C#
+var Leopards = Feline(AllSpotted());
+var Hyenas = Canine(AllSpotted());
+```
 
+If we use `List<T>` for `AllSpotted()`, in this statement `var Leopards = Feline(AllSpotted());`, 
+first, the database will return a huge list which has "AllSpotted". However, it has far more data than is actually needed.
+Because we will filter it. In this case, we are not only waste time on database to return more than we need, 
+but also waste time on our side for filtering.
 
+If we use `IEnumerable<T>`, the `LINQ` will only generate `SQL` to query the database once by conbining `AllSpotted()` and `Feline()`.
+And then we can use `.ToList()` if we want a list.
 
+First, let us modify `IEmployeeRepository` interface to include `GetAllEmployees()` method.
+```C#
+public interface IEmployeeRepository
+{
+    Employee GetEmployee(int Id);
+    IEnumerable<Employee> GetAllEmployees();
+}
+```
 
+Then we can notice that the `MockEmployeeRepository.cs` shows an error. Because since we changed the interface. 
+The repository need to implemente the new method in the interface. By right clicking the error, we can auto-generate the implementation code.
+Modify it to this.
+```C#
+ public IEnumerable<Employee> GetAllEmployee()
+{
+    return _employeeList;
+}
+```
 
+In `HomeController.cs`, we change the `Index()` action to this
+```C#
+public ViewResult Index()
+{
+    return View(_employeeRepository.GetAllEmployee());
+}
+```
+
+In the view `Index.cshtml`, set `IEnumerable<DotNetCoreTutorialJourney.Models.Employee>` as the model for the view using `@model` directive
+```HTML
+@model IEnumerable<DotNetCoreTutorialJourney.Models.Employee>
+
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Department</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emp in Model)
+            {
+                <tr>
+                    <td>
+                        @emp.Id
+                    </td>
+                    <td>
+                        @emp.Name
+                    </td>
+                    <td>
+                        @emp.Department
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>
+```
+
+##### [Back to Table of Contents](#table-of-contents)
 
 
 

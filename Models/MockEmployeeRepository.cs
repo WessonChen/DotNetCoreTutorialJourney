@@ -18,6 +18,12 @@ namespace DotNetCoreTutorialJourney.Models
                 new Employee() { Id = 3, Name = "Sam", Department = "IT", Email = "sam@gmail.com" },
             };
         }
+
+        public IEnumerable<Employee> GetAllEmployee()
+        {
+            return _employeeList;
+        }
+
         public Employee GetEmployee(int id)
         {
             return this._employeeList.FirstOrDefault(emp => emp.Id == id);
