@@ -11,7 +11,7 @@ namespace DotNetCoreTutorialJourney.Controllers
 {
     public class HomeController : Controller
     {
-        private IEmployeeRepository _employeeRepository;
+        private readonly IEmployeeRepository _employeeRepository;
 
         // GET: /<controller>/
         //public IActionResult Index()
@@ -28,7 +28,7 @@ namespace DotNetCoreTutorialJourney.Controllers
             return _employeeRepository.GetEmployee(1).Name;
         }
 
-        public JsonResult Detail()
+        public JsonResult Details()
         {
             return Json(_employeeRepository.GetEmployee(1));
         }

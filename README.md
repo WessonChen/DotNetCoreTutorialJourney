@@ -19,6 +19,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 11. [Ep 16 - Setup MVC in .Net Core](#ep-16---setup-mvc-in-net-core)
 12. [Ep 18 - Model in .Net Core MVC](#ep-18---model-in-net-core-mvc)
 13. [Ep 19 - .Net Core dependency injection](#ep-19---net-core-dependency-injection)
+14. [Ep 20 - Controller in .Net Core MVC](#ep-20---Controller-in-net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -938,7 +939,7 @@ This interface abstraction allows us to use **dependency injection** which in tu
 ```C#
 public class HomeController : Controller
 {
-    private IEmployeeRepository _employeeRepository;
+    private readonly IEmployeeRepository _employeeRepository;
 
     // Inject IEmployeeRepository using Constructor Injection
     public HomeController(IEmployeeRepository employeeRepository)
@@ -961,7 +962,7 @@ we are injecting `IEmployeeRepository` instance into the `HomeController` using 
 - Notice, we are assigning the injected dependency to a read-only field. This is a good practice as 
 it prevents accidentally assigning another value to it inside a method.
 - At this point, if we run the project we get the following error
-> InvalidOperationException: Unable to resolve service for type 'EmployeeManagement.Models.IEmployeeRepository' while attempting to activate 'EmployeeManagement.Controllers.HomeController'.
+> InvalidOperationException: Unable to resolve service for type 'DotNetCoreTutorialJourney.Models.IEmployeeRepository' while attempting to activate 'DotNetCoreTutorialJourney.Controllers.HomeController'.
 - This is because the ASP .NET dependency injection container does not know which object instance to provide 
 if someone requests an object that implements `IEmployeeRepository`
 - `IEmployeeRepository` may have several implementations. At the moment in our project we only have one implementation 
@@ -993,7 +994,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-Alternatively, we can also create a new instance inside the class like this.
+Alternatively, we can create a new instance inside the class like this.
 
 ```C#
 public class HomeController : Controller
@@ -1019,3 +1020,134 @@ from `MockEmployeeRepository` to `DatabaseEmployeeRepository`, we have to change
 It is tight coupling and hard to test.
 
 ##### [Back to Table of Contents](#table-of-contents)
+
+#### Ep 20 - [Controller in .Net Core MVC](https://www.youtube.com/watch?v=-O0UYM0ZIIc&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=20)
+
+<p align="center"> 
+  <img src="https://i.ibb.co/W5RwYth/how-mvc-works.png">
+</p>
+
+- `Controller` in MVC is a class and it inherits from `Microsoft.AspNetCore.Mvc.Controller`
+- The controller class name is suffixed with word `"Controller"`. For example `HomeController`, `EmployeeController`
+- When a request from the browser arrives at our application, it is the controller in the MVC design pattern, 
+that handles the incoming http request and responds to the user action
+- Controller class contains a set of public methods. These public methods in the Controller class are called **action methods**
+It is these controller action methods that handle and process the incoming http request
+- As we mentioned before, the `UseMvcWithDefaultRoute()` maps `{controller=Home}/{action=Index}/{id?}`,
+when we ENTER key `http://localhost:12345/home/details`, it calls `details` action in `homeController`
+- When request arrives at a controller action method. As part of processing that request, the controller creates the **Model**
+- To retrieve model data, the controller depends on a service
+- For example, in our case to retrieve `Employee` data, `HomeController` depends on `IEmployeeReporsitory` service
+- `IEmployeeReporsitory` service is injected into the `HomeController` using the constructor. This is called **Dependency Injection**
+- Notice, we are assigning the injected dependency to a read-only field. 
+This is a good practice as it prevents accidentally assigning another value to it inside a method.
+- Once the controller has the required model data, it can simply return that model data if we are building a RESTful service or an API.
+
+**Controller returns JSON data**
+
+```C#
+public class HomeController : Controller
+{
+    private readonly IEmployeeRepository _employeeRepository;
+
+    public HomeController(IEmployeeRepository employeeRepository)
+    {
+        _employeeRepository = employeeRepository;
+    }
+
+    public JsonResult Details()
+    {
+        Employee model = _employeeRepository.GetEmployee(1);
+        return Json(model);
+    }
+}
+```
+
+In this case, `Details()` method always returns JSON data. It **does not** respect content negotiation and **ignores** the Accept Header.
+
+**Controller returns ObjectResult**
+
+The following example respects content negotiation. It looks at the **Request Accept Header** and if it is set to `application/xml`, then XML data is returned. If the Accept header is set to `application/json`, then JSON data is returned
+
+```C#
+public ObjectResult Details()
+{
+    Employee model = _employeeRepository.GetEmployee(1);
+    return new ObjectResult(model);
+}
+```
+
+To be able to return data in XML format, we have to add Xml Serializer Formatter by calling `AddXmlSerializerFormatters()` method 
+in `ConfigureServices()` method in `Startup.cs` file.
+
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddMvc().AddXmlSerializerFormatters();
+    services.AddSingleton<IEmployeeRepository, MockEmployeeRepository>();
+}
+```
+
+**Controller returns View**
+
+```C#
+public ViewResult Details()
+{
+    Employee model = _employeeRepository.GetEmployee(1);
+    return View(model);
+}
+```
+
+Because we do not have the View yet, it shows an error.
+> InvalidOperationException: The view 'Details' was not found. The following locations were searched: /Views/Home/Details.cshtml ,/Views/Shared/Details.cshtml ,/Pages/Shared/Details.cshtml
+
+##### [Back to Table of Contents](#table-of-contents)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
