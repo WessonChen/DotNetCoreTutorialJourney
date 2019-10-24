@@ -19,7 +19,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 11. [Ep 16 - Setup MVC in .Net Core](#ep-16---setup-mvc-in-net-core)
 12. [Ep 18 - Model in .Net Core MVC](#ep-18---model-in-net-core-mvc)
 13. [Ep 19 - .Net Core dependency injection](#ep-19---net-core-dependency-injection)
-14. [Ep 20 - Controller in .Net Core MVC](#ep-20---Controller-in-net-core-mvc)
+14. [Ep 20 - Controller in .Net Core MVC](#ep-20---controller-in-net-core-mvc)
+15. [Ep 21 - View in .Net Core MVC](#ep-21---view-in-net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1103,7 +1104,58 @@ Because we do not have the View yet, it shows an error.
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 21 - [View in .Net Core MVC](https://www.youtube.com/watch?v=SWIcHLBnJUg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=21)
 
+**View in MVC**
+
+- Contains the logic to display the Model data provided to it by the Controller.
+- A view is an HTML template with embedded Razor markup.
+- A view file has .cshtml extension if the programming language is C#.
+
+**Where are View files stored**
+- By default, MVC looks for view files in the **Views** folder
+- View files that belong to a specific controller are stored in a sub-folder in the Views folder and that sub-folder has **the same name as the controller**
+- The view file has **the same name as that of the controller action method** with a `.cshtml` extension
+
+For example, the `public JsonResult Details()` method in `HomeController` class should has a View `root/Views/Home/Details.cshtml`.
+
+In this case, if we call `localhost:xxxxx/home/details`, the MVC will check `root/Views/Home/` first, then `root/Views/Shared/`, 
+then `root/Pages/Shared/` by default.
+
+If we go to the source code of `View()` methods, we can find it has 4 overloads.
+1. `public virtual ViewResult View();`
+2. `public virtual ViewResult View(object model);`
+3. `public virtual ViewResult View(string viewName);`
+4. `public virtual ViewResult View(string viewName, object model);`
+
+The last 2 overloads mean that we can customise the path of the view. For example
+```C#
+public ViewResult Details()
+{
+    return View("Test");
+}
+```
+The method above will find `root/Views/Home/test`
+
+Also, we can use absolute path or relative path. By using these, we need the extension of the file.
+
+```C#
+public ViewResult Details()
+{
+    return View("MyViews/test.cshtml");
+}
+```
+The method above will find `root/MyViews/test.cshtml`
+
+```C#
+public ViewResult Details()
+{
+    return View("../Test/update.cshtml");
+}
+```
+The method above will find `root/Views/Test/update.cshtml`
+
+##### [Back to Table of Contents](#table-of-contents)
 
 
 

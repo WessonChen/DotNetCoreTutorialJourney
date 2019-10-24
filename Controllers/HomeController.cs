@@ -28,9 +28,9 @@ namespace DotNetCoreTutorialJourney.Controllers
             return _employeeRepository.GetEmployee(1).Name;
         }
 
-        public JsonResult Details()
+        public ViewResult Details()
         {
-            return Json(_employeeRepository.GetEmployee(1));
+            return View(_employeeRepository.GetEmployee(1));
         }
     }
 }
