@@ -32,11 +32,9 @@ namespace DotNetCoreTutorialJourney.Controllers
         {
             Employee model = _employeeRepository.GetEmployee(1);
 
-            // Pass PageTitle and Employee model to the View using ViewData
-            ViewData["PageTitle"] = "Employee Details";
-            ViewData["Employee"] = model;
+            ViewBag.PageTitle = "Employee Details";
 
-            return View();
+            return View(model);
         }
     }
 }

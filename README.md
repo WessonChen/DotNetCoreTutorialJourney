@@ -5,7 +5,7 @@
 This repository is created based on **[ASP.NET core tutorial for beginners](https://www.youtube.com/playlist?list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU)** 
 by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 
-# Table of Contents
+## Table of Contents
 1. [Ep 6 - .Net Core in process hosting](#ep-6---net-core-in-process-hosting)
 2. [Ep 7 - .Net Core out of process hosting](#ep-7---net-core-out-of-process-hosting)
 3. [Ep 8 - .Net Core launchsettings json file](#ep-8---net-core-launchsettings-json-file)
@@ -22,6 +22,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 14. [Ep 20 - Controller in .Net Core MVC](#ep-20---controller-in-net-core-mvc)
 15. [Ep 21 - View in .Net Core MVC](#ep-21---view-in-net-core-mvc)
 16. [Ep 23 - ViewData in .Net Core MVC](#ep-23---viewdata-in-net-core-mvc)
+17. [Ep 24 - ViewBag in .Net Core MVC](#ep-24---viewbag-in-net-core-mvc)
+18. [Ep 25 - Strongly Typed View in .Net Core MVC](#ep-25---strongly-typed-view-in-net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1233,7 +1235,7 @@ and as a result we **do not get intellisense**.
 
 ##### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 23 - [ViewBag in .Net Core MVC](https://www.youtube.com/watch?v=FBvNz00o7jg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=24)
+#### Ep 24 - [ViewBag in .Net Core MVC](https://www.youtube.com/watch?v=FBvNz00o7jg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=24)
 
 In fact, `ViewBag` is a **wrapper around ViewData**. 
 With ViewData we use string keys to store and retrieve data. With ViewBag we use dynamic properties instead of string keys.
@@ -1254,7 +1256,7 @@ public ViewResult Details()
 }
 ````
 
-````C#
+````HTML
 <html>
 <head>
     <title></title>
@@ -1292,8 +1294,64 @@ and making **typographical errors** are also high.
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 25 - [Strongly Typed View in .Net Core MVC](https://www.youtube.com/watch?v=5auO0iXrOs4&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=25)
 
+**Strongly Typed View**
 
+The preferred approach to pass data from a controller to a view is by using a **strongly typed view**. 
+To create a strongly typed view, in the controller action method, pass the model object to the `View()` helper method. 
+Notice, in the example below, we are passing the `Employee` model object to the `View()` method.
+
+```C#
+public ViewResult Details()
+{
+    Employee model = _employeeRepository.GetEmployee(1);
+
+    ViewBag.PageTitle = "Employee Details";
+
+    return View(model);
+}
+```
+
+To create a strongly typed view specify the model type in the view using `@model` directive. In the example below, 
+we told the view that it will using the `DotNetCoreTutorialJourney.Models.Employee` object as the model by using `@model` directive. 
+Please note that in the directive(`@model`), m is in **lowercase**.
+
+To access the model object properties we use `@Model`. In `@Model`, M is in **uppercase**. In the example below, 
+to access the `Employee` object properties like `Name`, `Email` and `Department` 
+we are using `@Model.Name`, `@Model.Email` and `@Model.Department` respectively.
+
+```HTML
+@model EmployeeManagement.Models.Employee
+
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <h3>@ViewBag.PageTitle</h3>
+
+    <div>
+        Name : @Model.Name
+    </div>
+    <div>
+        Email : @Model.Email
+    </div>
+    <div>
+        Department : @Model.Department
+    </div>
+</body>
+</html>
+```
+
+**Strongly Typed View Benefits**
+
+Unlike `ViewData` and `ViewBag`, a strongly typed view **provides** compile-time type checking and intellisense. 
+With intellisense support we can be more productive and the chances of mis-spelling and making typographical errors are almost nill. 
+If we do make any errors we will come to know about them at compile time rather than at runtime. 
+So always use a strongly typed view to pass data from a controller to a view.
+
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
