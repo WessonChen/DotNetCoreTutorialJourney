@@ -21,6 +21,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 13. [Ep 19 - .Net Core dependency injection](#ep-19---net-core-dependency-injection)
 14. [Ep 20 - Controller in .Net Core MVC](#ep-20---controller-in-net-core-mvc)
 15. [Ep 21 - View in .Net Core MVC](#ep-21---view-in-net-core-mvc)
+16. [Ep 23 - ViewData in .Net Core MVC](#ep-23---viewdata-in-net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1123,10 +1124,12 @@ In this case, if we call `localhost:xxxxx/home/details`, the MVC will check `roo
 then `root/Pages/Shared/` by default.
 
 If we go to the source code of `View()` methods, we can find it has 4 overloads.
-1. `public virtual ViewResult View();`
-2. `public virtual ViewResult View(object model);`
-3. `public virtual ViewResult View(string viewName);`
-4. `public virtual ViewResult View(string viewName, object model);`
+```C#
+public virtual ViewResult View();
+public virtual ViewResult View(object model);
+public virtual ViewResult View(string viewName);
+public virtual ViewResult View(string viewName, object model);
+```
 
 The last 2 overloads mean that we can customise the path of the view. For example
 ```C#
@@ -1156,6 +1159,208 @@ public ViewResult Details()
 The method above will find `root/Views/Test/update.cshtml`
 
 ##### [Back to Table of Contents](#table-of-contents)
+
+#### Ep 23 - [ViewData in .Net Core MVC](https://www.youtube.com/watch?v=tz4q6q0_JwQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=23)
+
+In ASP.NET Core MVC, there are 3 ways to pass data from a controller to a view
+1. Using **ViewData**
+2. Using **ViewBag**
+3. Using a strongly typed model object. This is also called **Strongly typed view**
+
+By using ViewData or ViewBag to pass data, we are creating a **Loosely typed view**
+
+We can use keyword **ViewData** to set a pair of key/values in `Controller`. For example, in `HomeController`, we do
+
+```C#
+public ViewResult Details()
+{
+    Employee model = _employeeRepository.GetEmployee(1);
+
+    // Pass PageTitle and Employee model to the View using ViewData
+    ViewData["PageTitle"] = "Employee Details";
+    ViewData["Employee"] = model;
+
+    return View();
+}
+```
+
+And then in views, we use `@` to call `Razor` function and `ViewData` keyword to get the value. For example, in `Details.cshtml`, we do
+
+```HTML
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <h3>@ViewData["PageTitle"]</h3>
+
+    @{
+        var employee = ViewData["Employee"] as EmployeeManagement.Models.Employee;
+    }
+
+    <div>
+        Name : @employee.Name
+    </div>
+    <div>
+        Email : @employee.Email
+    </div>
+    <div>
+        Department : @employee.Department
+    </div>
+</body>
+</html>
+```
+
+<p align="center"> 
+  <img src="https://i.ibb.co/bPWLx8X/View-Data-Results.png">
+</p>
+
+**ViewData**
+
+- ViewData is a **dictionary** of weakly typed objects. 
+- To store and retrieve data from the ViewData dictionary we use string keys.
+- **String** data can be accessed from ViewData dictionary **without the need to cast** the data to string type.
+- If we are accessing any other type of data, we need to explicitly cast it to the type we are expecting.
+- In our example, we are casting the `Employee` object to `Employee` Type before accessing Name, 
+Email and Department properties of the `Employee` object.
+- ViewData is dynamically resolved at **runtime**, so it **does not provide compile-time type checking** 
+and as a result we **do not get intellisense**.
+- We will only come to know about these errors at run time. 
+- For this reason we usually **do not use** ViewData.
+- When we use ViewData, we end up creating a **loosely typed view**.
+
+##### [Back to Table of Contents](#table-of-contents)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

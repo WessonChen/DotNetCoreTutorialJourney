@@ -30,7 +30,13 @@ namespace DotNetCoreTutorialJourney.Controllers
 
         public ViewResult Details()
         {
-            return View(_employeeRepository.GetEmployee(1));
+            Employee model = _employeeRepository.GetEmployee(1);
+
+            // Pass PageTitle and Employee model to the View using ViewData
+            ViewData["PageTitle"] = "Employee Details";
+            ViewData["Employee"] = model;
+
+            return View();
         }
     }
 }
