@@ -26,6 +26,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 18. [Ep 25 - Strongly Typed View in .Net Core MVC](#ep-25---strongly-typed-view-in-net-core-mvc)
 19. [Ep 26 - ViewModel in .Net Core MVC](#ep-26---viewModel-in-net-core-mvc)
 20. [Ep 27 - List View in .Net Core MVC](#ep-27---list-view-in-net-core-mvc)
+21. [Ep 28 - Layout View in .Net Core MVC](#ep-28---layout-view-in-net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1560,24 +1561,83 @@ In the view `Index.cshtml`, set `IEnumerable<DotNetCoreTutorialJourney.Models.Em
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 28 - [Layout view in .Net Core MVC](https://www.youtube.com/watch?v=Px8nwoO7FO8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=28)
 
+<p align="center">
+  <img src="https://i.ibb.co/Npd7SWN/layout-view-in-asp-net-core-mvc.png">
+</p>
 
+This is a common layout of a website. Without layout view, we will have duplicated elements like Header and Footer in each single page.
 
+**Layout View in .NET Core MVC**
+- Just like a regular view a layout view is also a file on the file system with a .cshtml extension
+- You can think of a layout view as a master page in asp.net web forms.
+- Since a layout view is not specific to a controller, we usually place the layout view in a sub folder called "Shared" in the "Views" folder
+- By default, in ASP.NET Core MVC, the layout file is named `_Layout.cshtml`.
+- In ASP.NET Core MVC, the file names of other .cshtml files like `_ViewStart.cshtml` and `_ViewImports.cshtml` start with an underscore.
+- The leading underscore in the file name indicates that these files are not intended to be served directly by the browser.
+- It is also possible to have multiple layout files in a single application. 
+Perhaps one layout file for all admin users and a different layout file for all non admin users.
 
+Let us add `root/Views/Shared/_Layout.cshtml`, and add following code to the file.
 
+```HTML
+<!DOCTYPE html>
 
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+</head>
+<body>
+    @RenderBody()
+</body>
+</html>
+```
 
+`@RenderBody()` is the location where view specific content is injected. For example, if `index.cshtml` view is rendered using this layout view, 
+`index.cshtml `view content is injected at the location where we have `@RenderBody()` method call.
 
+Since we only need the body content form other views which imported shared layout, we can keep body only in those pages. And import `_layout.cshtml`.
 
+This is our `details.cshtml` View
 
+```HTML
+@model DotNetCoreTutorialJourney.ViewModels.HomeDetailsViewModel
 
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Employee Details";
+}
 
+<h3>@Model.PageTitle</h3>
 
+<div>
+    Name : @Model.Employee.Name
+</div>
+<div>
+    Email : @Model.Employee.Email
+</div>
+<div>
+    Department : @Model.Employee.Department
+</div>
+```
 
+Also, you can have different layout view like
+```HTML
+@{
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+    }
+    else
+    {
+        Layout = "_NonAdminLayout";
+    }
+}
+```
 
-
-
-
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
