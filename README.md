@@ -1211,46 +1211,86 @@ And then in views, we use `@` to call `Razor` function and `ViewData` keyword to
 </html>
 ```
 
+And we will have this.
+
 <p align="center"> 
   <img src="https://i.ibb.co/bPWLx8X/View-Data-Results.png">
 </p>
 
 **ViewData**
 
-- ViewData is a **dictionary** of weakly typed objects. 
-- To store and retrieve data from the ViewData dictionary we use string keys.
-- **String** data can be accessed from ViewData dictionary **without the need to cast** the data to string type.
+- `ViewData` is a **dictionary** of weakly typed objects. 
+- To store and retrieve data from the `ViewData` dictionary we use string keys.
+- **String** data can be accessed from `ViewData` dictionary **without the need to cast** the data to string type.
 - If we are accessing any other type of data, we need to explicitly cast it to the type we are expecting.
 - In our example, we are casting the `Employee` object to `Employee` Type before accessing Name, 
 Email and Department properties of the `Employee` object.
-- ViewData is dynamically resolved at **runtime**, so it **does not provide compile-time type checking** 
+- `ViewData` is dynamically resolved at **runtime**, so it **does not provide compile-time type checking** 
 and as a result we **do not get intellisense**.
 - We will only come to know about these errors at run time. 
-- For this reason we usually **do not use** ViewData.
-- When we use ViewData, we end up creating a **loosely typed view**.
+- For this reason we usually **do not use** `ViewData`.
+- When we use `ViewData`, we end up creating a **loosely typed view**.
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 23 - [ViewBag in .Net Core MVC](https://www.youtube.com/watch?v=FBvNz00o7jg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=24)
 
+In fact, `ViewBag` is a **wrapper around ViewData**. 
+With ViewData we use string keys to store and retrieve data. With ViewBag we use dynamic properties instead of string keys.
 
+Similar to ViewData, this is how we can use it.
 
+````C#
+public ViewResult Details()
+{
+    Employee model = _employeeRepository.GetEmployee(1);
 
+    // To store the page title and empoyee model object in the 
+    // ViewBag we are using dynamic properties PageTitle and Employee
+    ViewBag.PageTitle = "Employee Details";
+    ViewBag.Employee = model;
 
+    return View();
+}
+````
 
+````C#
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <h3>@ViewBag.PageTitle</h3>
 
+    <div>
+        Name : @ViewBag.Employee.Name
+    </div>
+    <div>
+        Email : @ViewBag.Employee.Email
+    </div>
+    <div>
+        Department : @ViewBag.Employee.Department
+    </div>
+</body>
+</html>
+````
 
+**ViewData v/s ViewBag**
 
+- `ViewBag` is a wrapper around `ViewData`
+- Both of them create a **loosely typed view**
+- With `ViewData` we use string keys to store and retrieve data from the `ViewData` dictionary
+- With `ViewBag` we use dynamic properties to store and retrieve data
+- Both `ViewData` keys and `ViewBag` dynamic properties are resolved dynamically **at runtime**
+- Both `ViewData` and `ViewBag` **does not provide compile-time type checking** and as a result we **do not get intellisense**
+- Since we do not have intellisense, the speed at which we write code is reduced and the chances of **mis-spelling** 
+and making **typographical errors** are also high.
+- We will only come to know about these errors at **run time**
+- For this reason we usually **do not** use `ViewData` or `ViewBag`
+- The preferred approach to pass data from a controller to a view is by using a strongly typed model object. 
+- Using a strongly typed model object creates a **strongly typed view**
 
-
-
-
-
-
-
-
-
-
-
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
