@@ -18,6 +18,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 10. [Ep 15 - .NET Core MVC](#ep-15---net-core-mvc)
 11. [Ep 16 - Setup MVC in .Net Core](#ep-16---setup-mvc-in-net-core)
 12. [Ep 18 - Model in .Net Core MVC](#ep-18---model-in-net-core-mvc)
+13. [Ep 19 - .Net Core dependency injection](#ep-19---net-core-dependency-injection)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -930,10 +931,91 @@ This interface abstraction allows us to use **dependency injection** which in tu
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 19 - [.Net Core dependency injection](https://www.youtube.com/watch?v=BPGtVpu81ek&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=19)
 
+**`HomeController`**
 
+```C#
+public class HomeController : Controller
+{
+    private IEmployeeRepository _employeeRepository;
 
+    // Inject IEmployeeRepository using Constructor Injection
+    public HomeController(IEmployeeRepository employeeRepository)
+    {
+        _employeeRepository = employeeRepository;
+    }
 
+    // Retrieve employee name and return
+    public string Index()
+    {
+        return _employeeRepository.GetEmployee(1).Name;
+    }
+}
+```
 
+- `HomeController` is dependant on `IEmployeeRepository` for retrieving `Employee` data.
+- Instead of the `HomeController` creating a new instance of an implement ion of `IEmployeeRepository`, 
+we are injecting `IEmployeeRepository` instance into the `HomeController` using the constructor. 
+- This is called **constructor injection**, as we are using the constructor to inject the dependency.
+- Notice, we are assigning the injected dependency to a read-only field. This is a good practice as 
+it prevents accidentally assigning another value to it inside a method.
+- At this point, if we run the project we get the following error
+> InvalidOperationException: Unable to resolve service for type 'EmployeeManagement.Models.IEmployeeRepository' while attempting to activate 'EmployeeManagement.Controllers.HomeController'.
+- This is because the ASP .NET dependency injection container does not know which object instance to provide 
+if someone requests an object that implements `IEmployeeRepository`
+- `IEmployeeRepository` may have several implementations. At the moment in our project we only have one implementation 
+and that is `MockEmployeeRepository`
+- As the name implies, `MockEmployeeRepository` works with the in-memory employee mock data.
+- To fix the `InvalidOperationException` error, we need to register `MockEmployeeRepository` class with the dependency injection container in ASP.NET core.
+- We do this in `ConfigureServices()` method in `Startup` class
 
+**Registering Services with the ASP.NET Core Dependency Injection Container**: 
 
+ASP.NET core provides the following 3 methods to register services with the dependency injection container. 
+The method that we use determines **the lifetime of the registered service**.
+
+1. `AddSingleton()` - As the name implies, `AddSingleton()` method creates a Singleton service. 
+A Singleton service is created when it is first requested. This same instance is then used by all the subsequent requests. 
+So in general, a Singleton service is created only one time per application and that single instance is used throughout the application life time.
+2. `AddTransient()` - This method creates a Transient service. A new instance of a Transient service is created each time it is requested. 
+3. `AddScoped()` - This method creates a Scoped service. A new instance of a Scoped service is created once per request within the scope. 
+For example, in a web application it creates 1 instance per each http request but uses the same instance in the other calls within that same web request.
+
+For now, we use `AddSingleton()`. So, with this code in-place, if someone asks for `IEmployeeRepository`, 
+an instance of `MockEmployeeRepository` will be provided.
+
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddMvc();
+    services.AddSingleton<IEmployeeRepository, MockEmployeeRepository>();
+}
+```
+
+Alternatively, we can also create a new instance inside the class like this.
+
+```C#
+public class HomeController : Controller
+{
+    private readonly IEmployeeRepository _employeeRepository;
+
+    // Inject IEmployeeRepository using Constructor Injection
+    public HomeController(IEmployeeRepository employeeRepository)
+    {
+        _employeeRepository = new MockEmployeeRepository();
+    }
+
+    // Retrieve employee name and return
+    public string Index()
+    {
+        return _employeeRepository.GetEmployee(1).Name;
+    }
+}
+```
+
+However, when this interface has been used in a lot of classes, if we change the implementation of it, for example,
+from `MockEmployeeRepository` to `DatabaseEmployeeRepository`, we have to change every single class.
+It is tight coupling and hard to test.
+
+##### [Back to Table of Contents](#table-of-contents)
