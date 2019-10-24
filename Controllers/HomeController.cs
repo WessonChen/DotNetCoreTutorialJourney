@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetCoreTutorialJourney.Models;
+using DotNetCoreTutorialJourney.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -30,11 +31,15 @@ namespace DotNetCoreTutorialJourney.Controllers
 
         public ViewResult Details()
         {
-            Employee model = _employeeRepository.GetEmployee(1);
+            // Instantiate HomeDetailsViewModel and store Employee details and PageTitle
+            HomeDetailsViewModel homeDetailsViewModel = new HomeDetailsViewModel()
+            {
+                Employee = _employeeRepository.GetEmployee(1),
+                PageTitle = "Employee Details"
+            };
 
-            ViewBag.PageTitle = "Employee Details";
-
-            return View(model);
+            // Pass the ViewModel object to the View() helper method
+            return View(homeDetailsViewModel);
         }
     }
 }

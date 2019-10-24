@@ -24,6 +24,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 16. [Ep 23 - ViewData in .Net Core MVC](#ep-23---viewdata-in-net-core-mvc)
 17. [Ep 24 - ViewBag in .Net Core MVC](#ep-24---viewbag-in-net-core-mvc)
 18. [Ep 25 - Strongly Typed View in .Net Core MVC](#ep-25---strongly-typed-view-in-net-core-mvc)
+19. [Ep 26 - ViewModel in .Net Core MVC](#ep-26---viewModel-in-net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1349,24 +1350,87 @@ we are using `@Model.Name`, `@Model.Email` and `@Model.Department` respectively.
 Unlike `ViewData` and `ViewBag`, a strongly typed view **provides** compile-time type checking and intellisense. 
 With intellisense support we can be more productive and the chances of mis-spelling and making typographical errors are almost nill. 
 If we do make any errors we will come to know about them at compile time rather than at runtime. 
+
 So always use a strongly typed view to pass data from a controller to a view.
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 26 - [ViewModel in .Net Core MVC](https://www.youtube.com/watch?v=Lu24lZsUreg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=26)
 
+**Why do we need a ViewModel**
 
+In some cases, a model object may not contain all the data a view needs. This is when we create a `ViewModel` as a **Data Transfer Objects*. 
+It contains all the data a view needs. For example
 
+```C#
+public ViewResult Details()
+{
+    Employee model = _employeeRepository.GetEmployee(1);
 
+    ViewBag.PageTitle = "Employee Details";
 
+    return View(model);
+}
+```
 
+In this case, we can wrap `Employee` and `PageTitle` into a new `Model` as **Data Transfer Objects**
 
+First, let's create `root/ViewModels/HomeDetailsViewModel.cs`. Then we can wrap data we need.
 
+```C#
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class HomeDetailsViewModel
+    {
+        public Employee Employee { get; set; }
+        public string PageTitle { get; set; }
+    }
+}
+```
 
+Then, in controller, we do
 
+```C#
+public ViewResult Details()
+{
+    // Instantiate HomeDetailsViewModel and store Employee details and PageTitle
+    HomeDetailsViewModel homeDetailsViewModel = new HomeDetailsViewModel()
+    {
+        Employee = _employeeRepository.GetEmployee(1),
+        PageTitle = "Employee Details"
+    };
 
+    // Pass the ViewModel object to the View() helper method
+    return View(homeDetailsViewModel);
+}
+```
 
+Last, in view, we can do
 
+```HTML
+@model DotNetCoreTutorialJourney.ViewModels.HomeDetailsViewModel
 
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <h3>@Model.PageTitle</h3>
+
+    <div>
+        Name : @Model.Employee.Name
+    </div>
+    <div>
+        Email : @Model.Employee.Email
+    </div>
+    <div>
+        Department : @Model.Employee.Department
+    </div>
+</body>
+</html>
+```
+
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
