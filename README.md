@@ -16,6 +16,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 8. [Ep 13 - .NET Core developer exception page](#ep-13---net-core-developer-exception-page)
 9. [Ep 14 - .NET Core environment variables](#ep-14---net-core-environment-variables)
 10. [Ep 15 - .NET Core MVC](#ep-15---net-core-mvc)
+11. [Ep 16 - Setup MVC in .Net Core](#ep-16---setup-mvc-in-net-core)
+12. [Ep 18 - Model in .Net Core MVC](#ep-18---model-in-net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -874,12 +876,59 @@ We commented the default `IActionResult` because it returns the `View()`, and we
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 18 - [Model in .Net Core MVC](https://www.youtube.com/watch?v=KXPbJ9I4ce0&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=18)
 
+**Model in MVC** contains a set of classes that represent data and the logic to manage that data.
 
+ First, we create a `Employee` class
 
+ ```C#
+ public class Employee
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Department { get; set; }
+}
+```
 
+Then we create a `interface` to interact with `Employee`
 
+```C#
+public interface IEmployeeRepository
+{
+    Employee GetEmployee(int Id);
+}
+```
 
+Then we impletent the `interface` with mock data.
+
+```C#
+public class MockEmployeeRepository : IEmployeeRepository
+{
+    private List<Employee> _employeeList;
+
+    public MockEmployeeRepository()
+    {
+        _employeeList = new List<Employee>()
+        {
+            new Employee() { Id = 1, Name = "Mary", Department = "HR", Email = "mary@pragimtech.com" },
+            new Employee() { Id = 2, Name = "John", Department = "IT", Email = "john@pragimtech.com" },
+            new Employee() { Id = 3, Name = "Sam", Department = "IT", Email = "sam@pragimtech.com" },
+        };
+    }
+
+    public Employee GetEmployee(int Id)
+    {
+        return this._employeeList.FirstOrDefault(e => e.Id == Id);
+    }
+}
+```
+
+Throughout our application we will be programming against the interface `IEmployeeRepository` and not the concrete implementation `MockEmployeeRepository`. 
+This interface abstraction allows us to use **dependency injection** which in turn makes our application flexible and easily unit testable.
+
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
