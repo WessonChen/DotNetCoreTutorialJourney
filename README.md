@@ -29,6 +29,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 21. [Ep 28 - Layout View in .Net Core MVC](#ep-28---layout-view-in-net-core-mvc)
 22. [Ep 29 - Sections in layout page in .Net Core MVC](#ep-29---sections-in-layout-page-in-net-core-mvc)
 23. [Ep 30 - ViewStart page in .Net Core MVC](#ep-30---viewstart-page-in-net-core-mvc)
+24. [Ep 31 - ViewImports page in .Net Core MVC](#ep-31---viewImports-page-in-net-core-mvc)
  
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1733,21 +1734,37 @@ Also, you can apply logic to layout view
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 31 - [ViewImports page in .Net Core MVC](https://www.youtube.com/watch?v=5HskoMcun9A&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=31)
 
+`_ViewImports.cshtml` file is usually placed in the Views folder. It is used to include the common **namespaces** 
+so we do not have to include them in every view that needs those namespaces. 
 
+For example, we have `@model IEnumerable<DotNetCoreTutorialJourney.Models.Employee>` in `Index.cshtml` and 
+`@model DotNetCoreTutorialJourney.ViewModels.HomeDetailsViewModel` in `Details.cshtml`
 
+Instead, we add the following code to `root/Views/_ViewImports.cshtml`
+```HTML
+@using DotNetCoreTutorialJourney.Models;
+@using DotNetCoreTutorialJourney.ViewModels;
+```
 
+And then, we can use `@model IEnumerable<Employee>` in `Index.cshtml` and `@model HomeDetailsViewModel` in `Details.cshtml`
 
+Notice, `@using` directive is used to include the common **namespaces**. In addition to `@using` directive, 
+`_ViewImports` file also supports the following directives.
 
+```HTML
+@addTagHelper
+@removeTagHelper
+@tagHelperPrefix
+@model
+@inherits
+@inject
+```
 
+Just like, `_ViewStart.cshtml`, `_ViewImports.cshtml` is also **hierarchical**. It has the same hierarchical feature the `_ViewStart.cshtml` has.
 
-
-
-
-
-
-
-
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
