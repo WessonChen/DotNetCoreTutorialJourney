@@ -30,6 +30,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 22. [Ep 29 - Sections in layout page in .Net Core MVC](#ep-29---sections-in-layout-page-in-net-core-mvc)
 23. [Ep 30 - ViewStart page in .Net Core MVC](#ep-30---viewstart-page-in-net-core-mvc)
 24. [Ep 31 - ViewImports page in .Net Core MVC](#ep-31---viewImports-page-in-net-core-mvc)
+25. [Ep 32 - Routing in .Net Core MVC](#ep-32---routing-in-net-core-mvc)
  
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1766,21 +1767,42 @@ Just like, `_ViewStart.cshtml`, `_ViewImports.cshtml` is also **hierarchical**. 
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 32 - [Routing in .Net Core MVC](https://www.youtube.com/watch?v=ZoxrbrHjj2g&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=32)
 
+As we methioned before, in `Startup.cs`, we are using `app.UseMvcWithDefaultRoute();`.
 
+[Here](https://github.com/aspnet/Mvc/blob/release/2.1/src/Microsoft.AspNetCore.Mvc.Core/Builder/MvcApplicationBuilderExtensions.cs) is the source code
 
+```C#
+public static IApplicationBuilder UseMvcWithDefaultRoute(this IApplicationBuilder app)
+{
+    if (app == null)
+    {
+        throw new ArgumentNullException(nameof(app));
+    }
 
+    return app.UseMvc(routes =>
+    {
+        routes.MapRoute(
+            name: "default",
+            template: "{controller=Home}/{action=Index}/{id?}");
+    });
+}
+```
 
+Which means `app.UseMvcWithDefaultRoute();` is implemented by
+```C#
+app.UseMvc(routes =>
+{
+    routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
+});
+```
+We can use this one if we want more control over routes.
 
+In this case, `=Home` and `=Index` give the route default value, which means `{server}` is the same as `{server}/Home/Index`.
+And `{id?}` means the parameter is optional.
 
-
-
-
-
-
-
-
-
+##### [Back to Table of Contents](#table-of-contents)
 
 
 

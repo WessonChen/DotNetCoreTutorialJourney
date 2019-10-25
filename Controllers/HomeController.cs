@@ -29,7 +29,7 @@ namespace DotNetCoreTutorialJourney.Controllers
             return View(_employeeRepository.GetAllEmployee());
         }
 
-        public ViewResult Details()
+        public ViewResult Details(int id)
         {
             // Instantiate HomeDetailsViewModel and store Employee details and PageTitle
             HomeDetailsViewModel homeDetailsViewModel = new HomeDetailsViewModel()
