@@ -34,7 +34,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 26. [Ep 33 - Attribute Routing in .Net Core MVC](#ep-33---attribute-routing-in-net-core-mvc)
  
 ## Notes
-#### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
+### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
 
 Some of the tasks that `CreateDefaultBuilder()` performs
 1. Setting up the web server
@@ -60,9 +60,9 @@ We can display `System.Diagnostics.Process.GetCurrentProcess().ProcessName`
 
 InProcess hosting delivers significantly higher request throughput than OutOfProcess hosting.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 7 - [.Net Core out of process hosting](https://www.youtube.com/watch?v=QsXsOX6qq2c&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=7)
+### Ep 7 - [.Net Core out of process hosting](https://www.youtube.com/watch?v=QsXsOX6qq2c&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=7)
 
 Out of process using 2 Web Servers - Internal and External Web Server
 - The Internal Web Server is Kestrel
@@ -87,9 +87,9 @@ Process name is w3wp.exe or iisexpress.exe | Process name is dotnet.exe
 Only one web server | Two web servers
 Better for performance | Penalty of proxying requests between internal and external web server
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 8 - [.Net Core launchsettings json file](https://www.youtube.com/watch?v=u2S4TkkACVc&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=8)
+### Ep 8 - [.Net Core launchsettings json file](https://www.youtube.com/watch?v=u2S4TkkACVc&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=8)
 
 **launchsettings.json file**
 - You will find this file in the **"Properties"** folder in the project root folder.
@@ -179,9 +179,9 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 ```         
 In this case, **DeveloperExceptionPage** is only displayed if the environment is **Development**.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 9 - [.Net Core appsetting json file](https://www.youtube.com/watch?v=m_BevGi7zBw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=9)
+### Ep 9 - [.Net Core appsetting json file](https://www.youtube.com/watch?v=m_BevGi7zBw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=9)
 
 In previous versions of ASP.NET, we store application configuration settings, like database connection strings for example, in **web.config file**. 
 In ASP.NET Core application configuration settings can come from the following **different configurations sources**. 
@@ -244,11 +244,11 @@ The following is the **default order** in which the various configuration source
 You can change this order if you want to or 
 even add your own custom configuration sources in addition to all the existing configuration sources.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 10 - [Middleware in .NET Core](https://www.youtube.com/watch?v=ALu4jtvjSYw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=10)
+### Ep 10 - [Middleware in .NET Core](https://www.youtube.com/watch?v=ALu4jtvjSYw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=10)
 
-##### What is Middleware in ASP.NET Core
+**What is Middleware in ASP.NET Core**
 In ASP.NET Core, Middleware is a piece of software that can handle an HTTP request or response. 
 A given middleware component in ASP.NET Core has a very specific purpose. 
 For example we may have a middleware component that authenticates a user, another piece of middleware to handle errors, 
@@ -305,9 +305,9 @@ Care should be taken to add the middleware in the right order, otherwise the app
 **The middleware components are available as NuGet packages**.
 This means updates are now handled by NuGet, providing the ability to update each middleware separately. 
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 11 - [Configure .NET Core request processing pipeline](https://www.youtube.com/watch?v=nt6anXAwfYI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=11)
+### Ep 11 - [Configure .NET Core request processing pipeline](https://www.youtube.com/watch?v=nt6anXAwfYI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=11)
 
 As part of the application startup, `Configure()` method sets up the request processing pipeline. 
 
@@ -432,9 +432,9 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env,
   <img src="https://i.ibb.co/61rPnLJ/request-delegate-pipeline.png">
 </p>
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 12 - [Static files in .Net Core](https://www.youtube.com/watch?v=yt6bzZoovgM&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=12)
+### Ep 12 - [Static files in .Net Core](https://www.youtube.com/watch?v=yt6bzZoovgM&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=12)
 
 **Static Files**
 - By default, an asp.net core application will not serve static files
@@ -522,9 +522,9 @@ UseDefaultFiles | DefaultFilesOptions
 UseStaticFiles | StaticFileOptions
 UseFileServer | FileServerOptions
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 13 - [.Net Core developer exception page](https://www.youtube.com/watch?v=UGG2-oV9iQ8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=13)
+### Ep 13 - [.Net Core developer exception page](https://www.youtube.com/watch?v=UGG2-oV9iQ8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=13)
 
 Consider the following code in `Configure()` method in `Startup` class 
 ```C#
@@ -559,9 +559,9 @@ Notice that `UseDeveloperExceptionPage()` middleware must be plugged into the re
 so it can handle the exception and display the Developer Exception Page if the subsequent middleware components in the pipeline raises an exception.
 Because the pipeline might be reversed before the `UseDeveloperExceptionPage()`.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 14 - [.Net Core environment variables](https://www.youtube.com/watch?v=x8jNX1nb_og&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=14)
+### Ep 14 - [.Net Core environment variables](https://www.youtube.com/watch?v=x8jNX1nb_og&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=14)
 
 In most software development organisations we typically have the following development environments. 
 - Development
@@ -602,9 +602,9 @@ However, this file will not be loaded when we publish the project.
 We can also set it on a Operating system, like `Windows`, `macOS` or `Linux`.
 For more information, we can check [Use multiple environments in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments?view=aspnetcore-2.1)
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 15 - [.Net Core MVC](https://www.youtube.com/watch?v=f72ookCWhsQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=15)
+### Ep 15 - [.Net Core MVC](https://www.youtube.com/watch?v=f72ookCWhsQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=15)
 
 **What is MVC**
 
@@ -752,9 +752,9 @@ it then passes that `Employee` model object to the view.
 The view then generates the required HTML to present the `Employee` data provided to it by the Controller. 
 This HTML is then sent over the network to the user who made the request.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 16 - [Setup MVC in .Net Core](https://www.youtube.com/watch?v=KQH51Yip0K0&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=16)
+### Ep 16 - [Setup MVC in .Net Core](https://www.youtube.com/watch?v=KQH51Yip0K0&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=16)
 
 **Step 1**: In `ConfigureServices()` method of the `Startup` class in `Startup.cs` file, include `services.AddMvc();`.
 
@@ -888,9 +888,9 @@ public class HomeController : Controller
 
 We commented the default `IActionResult` because it returns the `View()`, and we do not have a `View()` yet. Let's return a string for now.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 18 - [Model in .Net Core MVC](https://www.youtube.com/watch?v=KXPbJ9I4ce0&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=18)
+### Ep 18 - [Model in .Net Core MVC](https://www.youtube.com/watch?v=KXPbJ9I4ce0&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=18)
 
 **Model in MVC** contains a set of classes that represent data and the logic to manage that data.
 
@@ -942,9 +942,9 @@ public class MockEmployeeRepository : IEmployeeRepository
 Throughout our application we will be programming against the interface `IEmployeeRepository` and not the concrete implementation `MockEmployeeRepository`. 
 This interface abstraction allows us to use **dependency injection** which in turn makes our application flexible and easily unit testable.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 19 - [.Net Core dependency injection](https://www.youtube.com/watch?v=BPGtVpu81ek&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=19)
+### Ep 19 - [.Net Core dependency injection](https://www.youtube.com/watch?v=BPGtVpu81ek&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=19)
 
 **`HomeController`**
 
@@ -1031,9 +1031,9 @@ However, when this interface has been used in a lot of classes, if we change the
 from `MockEmployeeRepository` to `DatabaseEmployeeRepository`, we have to change every single class.
 It is tight coupling and hard to test.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 20 - [Controller in .Net Core MVC](https://www.youtube.com/watch?v=-O0UYM0ZIIc&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=20)
+### Ep 20 - [Controller in .Net Core MVC](https://www.youtube.com/watch?v=-O0UYM0ZIIc&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=20)
 
 <p align="center"> 
   <img src="https://i.ibb.co/W5RwYth/how-mvc-works.png">
@@ -1113,9 +1113,9 @@ public ViewResult Details()
 Because we do not have the View yet, it shows an error.
 > InvalidOperationException: The view 'Details' was not found. The following locations were searched: /Views/Home/Details.cshtml ,/Views/Shared/Details.cshtml ,/Pages/Shared/Details.cshtml
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 21 - [View in .Net Core MVC](https://www.youtube.com/watch?v=SWIcHLBnJUg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=21)
+### Ep 21 - [View in .Net Core MVC](https://www.youtube.com/watch?v=SWIcHLBnJUg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=21)
 
 **View in MVC**
 
@@ -1168,9 +1168,9 @@ public ViewResult Details()
 ```
 The method above will find `root/Views/Test/update.cshtml`
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 23 - [ViewData in .Net Core MVC](https://www.youtube.com/watch?v=tz4q6q0_JwQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=23)
+### Ep 23 - [ViewData in .Net Core MVC](https://www.youtube.com/watch?v=tz4q6q0_JwQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=23)
 
 In ASP.NET Core MVC, there are 3 ways to pass data from a controller to a view
 1. Using **ViewData**
@@ -1241,9 +1241,9 @@ and as a result we **do not get intellisense**.
 - For this reason we usually **do not use** `ViewData`.
 - When we use `ViewData`, we end up creating a **loosely typed view**.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 24 - [ViewBag in .Net Core MVC](https://www.youtube.com/watch?v=FBvNz00o7jg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=24)
+### Ep 24 - [ViewBag in .Net Core MVC](https://www.youtube.com/watch?v=FBvNz00o7jg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=24)
 
 In fact, `ViewBag` is a **wrapper around ViewData**. 
 With ViewData we use string keys to store and retrieve data. With ViewBag we use dynamic properties instead of string keys.
@@ -1300,9 +1300,9 @@ and making **typographical errors** are also high.
 - The preferred approach to pass data from a controller to a view is by using a strongly typed model object. 
 - Using a strongly typed model object creates a **strongly typed view**
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 25 - [Strongly Typed View in .Net Core MVC](https://www.youtube.com/watch?v=5auO0iXrOs4&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=25)
+### Ep 25 - [Strongly Typed View in .Net Core MVC](https://www.youtube.com/watch?v=5auO0iXrOs4&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=25)
 
 **Strongly Typed View**
 
@@ -1360,9 +1360,9 @@ If we do make any errors we will come to know about them at compile time rather 
 
 So always use a strongly typed view to pass data from a controller to a view.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 26 - [ViewModel in .Net Core MVC](https://www.youtube.com/watch?v=Lu24lZsUreg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=26)
+### Ep 26 - [ViewModel in .Net Core MVC](https://www.youtube.com/watch?v=Lu24lZsUreg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=26)
 
 **Why do we need a ViewModel**
 
@@ -1437,9 +1437,9 @@ Last, in view, we can do
 </html>
 ```
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 27 - [List view in .Net Core MVC](https://www.youtube.com/watch?v=nHAMDUtiV6w&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=27)
+### Ep 27 - [List view in .Net Core MVC](https://www.youtube.com/watch?v=nHAMDUtiV6w&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=27)
 
 If we want to display a list of objects, we can use **`IEnumerable<T>`**
 
@@ -1564,9 +1564,9 @@ In the view `Index.cshtml`, set `IEnumerable<DotNetCoreTutorialJourney.Models.Em
 </html>
 ```
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 28 - [Layout view in .Net Core MVC](https://www.youtube.com/watch?v=Px8nwoO7FO8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=28)
+### Ep 28 - [Layout view in .Net Core MVC](https://www.youtube.com/watch?v=Px8nwoO7FO8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=28)
 
 <p align="center">
   <img src="https://i.ibb.co/Npd7SWN/layout-view-in-asp-net-core-mvc.png">
@@ -1630,9 +1630,9 @@ This is our `details.cshtml` View
 
 Also, you can have multiple layout views
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 29 - [Sections in layout page in .Net Core MVC](https://www.youtube.com/watch?v=9OyrzRVZT8o&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=29)
+### Ep 29 - [Sections in layout page in .Net Core MVC](https://www.youtube.com/watch?v=9OyrzRVZT8o&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=29)
 
 A layout page in ASP.NET Core MVC can also include a section. A section can be optional or mandatory. 
 It provides a way to organize where certain page elements like `JavaScript` and `CSS` should be placed.
@@ -1684,9 +1684,9 @@ And in `Details.cshtml`, we do
 
 Notice that we should not add `JavaScript` or `CSS` to pages directly.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 30 - [ViewStart page in .Net Core MVC](https://www.youtube.com/watch?v=r7WgjrTSlO8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=30)
+### Ep 30 - [ViewStart page in .Net Core MVC](https://www.youtube.com/watch?v=r7WgjrTSlO8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=30)
 
 For now, we set the Layout property in each and every view. This violates DRY (Don't Repeat Yourself) principle, 
 and has disadvantages of **Redundant code** and **Maintenance overhead**.
@@ -1734,9 +1734,9 @@ Also, you can apply logic to layout view
 }
 ```
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 31 - [ViewImports page in .Net Core MVC](https://www.youtube.com/watch?v=5HskoMcun9A&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=31)
+### Ep 31 - [ViewImports page in .Net Core MVC](https://www.youtube.com/watch?v=5HskoMcun9A&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=31)
 
 `_ViewImports.cshtml` file is usually placed in the Views folder. It is used to include the common **namespaces** 
 so we do not have to include them in every view that needs those namespaces. 
@@ -1766,9 +1766,9 @@ Notice, `@using` directive is used to include the common **namespaces**. In addi
 
 Just like, `_ViewStart.cshtml`, `_ViewImports.cshtml` is also **hierarchical**. It has the same hierarchical feature the `_ViewStart.cshtml` has.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 32 - [Routing in .Net Core MVC](https://www.youtube.com/watch?v=ZoxrbrHjj2g&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=32)
+### Ep 32 - [Routing in .Net Core MVC](https://www.youtube.com/watch?v=ZoxrbrHjj2g&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=32)
 
 There are 2 routing techniques in ASP.NET Core MVC. **Conventional Routing** and **Attribute Routing**.
 
@@ -1805,9 +1805,9 @@ We can use this one if we want more control over routes.
 In this case, `=Home` and `=Index` give the route default value, which means `{server}` is the same as `{server}/Home/Index`.
 And `{id?}` means the parameter is optional.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
-#### Ep 33 - [Attribute Routing in .Net Core MVC](https://www.youtube.com/watch?v=prNptonJAiY&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=33)
+### Ep 33 - [Attribute Routing in .Net Core MVC](https://www.youtube.com/watch?v=prNptonJAiY&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=33)
 
 In `Startup.cs`, if we use `app.UseMvc()` only without route, any URL we give will return 404 error.
 
@@ -1958,7 +1958,7 @@ However, in general, conventional routes are used for controllers that serve HTM
 
 However, there is nothing stopping us from mixing conventional routing with attribute routing in a single application to get a bit more flexibility with routes.
 
-##### [Back to Table of Contents](#table-of-contents)
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
