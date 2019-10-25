@@ -1,4 +1,5 @@
 @model DotNetCoreTutorialJourney.ViewModels.HomeDetailsViewModel
+
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "Employee Details";
@@ -15,3 +16,7 @@
 <div>
     Department : @Model.Employee.Department
 </div>
+
+@section Scripts {
+    <script src="~/js/CustomScript.js"></script>
+}

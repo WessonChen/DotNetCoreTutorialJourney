@@ -1,34 +1,32 @@
 @model IEnumerable<DotNetCoreTutorialJourney.Models.Employee>
 
-<html>
-<head>
-    <title></title>
-</head>
-<body>
-    <table>
-        <thead>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Employee List";
+}
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Department</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in Model)
+        {
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Department</th>
+                <td>
+                    @emp.Id
+                </td>
+                <td>
+                    @emp.Name
+                </td>
+                <td>
+                    @emp.Department
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var emp in Model)
-            {
-                <tr>
-                    <td>
-                        @emp.Id
-                    </td>
-                    <td>
-                        @emp.Name
-                    </td>
-                    <td>
-                        @emp.Department
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</body>
-</html>
+        }
+    </tbody>
+</table>

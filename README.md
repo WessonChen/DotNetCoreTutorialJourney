@@ -27,6 +27,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 19. [Ep 26 - ViewModel in .Net Core MVC](#ep-26---viewModel-in-net-core-mvc)
 20. [Ep 27 - List View in .Net Core MVC](#ep-27---list-view-in-net-core-mvc)
 21. [Ep 28 - Layout View in .Net Core MVC](#ep-28---layout-view-in-net-core-mvc)
+22. [Ep 29 - Sections in layout page in .Net Core MVC](#ep-29---sections-in-layout-page-in-net-core-mvc)
 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1623,34 +1624,63 @@ This is our `details.cshtml` View
 </div>
 ```
 
-Also, you can have different layout view like
-```HTML
-@{
-    if (User.IsInRole("Admin"))
-    {
-        Layout = "_AdminLayout";
-    }
-    else
-    {
-        Layout = "_NonAdminLayout";
-    }
-}
-```
+Also, you can have multiple layout view
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 29 - [Sections in layout page in .Net Core MVC](https://www.youtube.com/watch?v=9OyrzRVZT8o&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=29)
 
+A layout page in ASP.NET Core MVC can also include a section. A section can be optional or mandatory. 
+It provides a way to organize where certain page elements like `JavaScript` and `CSS` should be placed.
 
+For example, when we want to add a `JavaScript` globally, we can add file to shared layout.
+```HTML
+<body>
+    @RenderBody();
+    <script src="~/js/CustomScript.js"></script>
+</body>
+```
 
+However, when we only want to do this for certain file, like `Details.cshtml`, we can do
+```HTML
+<body>
+    @RenderBody()
+    @RenderSection("Scripts", required: false)
+</body>
+```
 
+Notice that in `@RenderSection("Scripts", required: false);` if `required` is `true`, or we do not have this parameter like `@RenderSection("Scripts");`, 
+it means this section is mandatory, and all pages use this shared layout should have a section called "Scripts".
 
+And in `Details.cshtml`, we do
+```HTML
+@model DotNetCoreTutorialJourney.ViewModels.HomeDetailsViewModel
 
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Employee Details";
+}
 
+<h3>@Model.PageTitle</h3>
 
+<div>
+    Name : @Model.Employee.Name
+</div>
+<div>
+    Email : @Model.Employee.Email
+</div>
+<div>
+    Department : @Model.Employee.Department
+</div>
 
+@section Scripts {
+    <script src="~/js/CustomScript.js"></script>
+}
+```
 
+Notice that we should not add `JavaScript` or `CSS` to pages directly.
 
-
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
