@@ -31,6 +31,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 23. [Ep 30 - ViewStart page in .Net Core MVC](#ep-30---viewstart-page-in-net-core-mvc)
 24. [Ep 31 - ViewImports page in .Net Core MVC](#ep-31---viewImports-page-in-net-core-mvc)
 25. [Ep 32 - Routing in .Net Core MVC](#ep-32---routing-in-net-core-mvc)
+26. [Ep 33 - Attribute Routing in .Net Core MVC](#ep-33---attribute-routing-in-net-core-mvc)
  
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1769,7 +1770,9 @@ Just like, `_ViewStart.cshtml`, `_ViewImports.cshtml` is also **hierarchical**. 
 
 #### Ep 32 - [Routing in .Net Core MVC](https://www.youtube.com/watch?v=ZoxrbrHjj2g&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=32)
 
-As we methioned before, in `Startup.cs`, we are using `app.UseMvcWithDefaultRoute();`.
+There are 2 routing techniques in ASP.NET Core MVC. **Conventional Routing** and **Attribute Routing**.
+
+As we methioned before, in `Startup.cs`, we are using `app.UseMvcWithDefaultRoute();`, which is **Conventional Routing**.
 
 [Here](https://github.com/aspnet/Mvc/blob/release/2.1/src/Microsoft.AspNetCore.Mvc.Core/Builder/MvcApplicationBuilderExtensions.cs) is the source code
 
@@ -1804,20 +1807,158 @@ And `{id?}` means the parameter is optional.
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 33 - [Attribute Routing in .Net Core MVC](https://www.youtube.com/watch?v=prNptonJAiY&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=33)
 
+In `Startup.cs`, if we use `app.UseMvc()` only without route, any URL we give will return 404 error.
 
+**Attribute Routing Example**
 
+With attribute routing, we use the `Route` attribute to define our routes. 
+We could apply the `Route` attribute on the `Controller` or on the `Controller Action Methods`.
 
+```C#
+public class HomeController : Controller
+{
+    [Route("")]
+    [Route("Home")]
+    [Route("Home/Index")]
+    public ViewResult Index()
+    {
+        return View();
+    }
+}
+```
 
+The `Route()` attribute is specified 3 times on the `Index()` action method. With each instance of the `Route()` attribute 
+we specified a different route template. With these 3 route templates in place, the `Index()` action method of the `HomeController` will be executed 
+for any of the following 3 URL paths.
+- `/`
+- `/Home`
+- `/Home/Index`
 
+Also, we can use it for parameters
 
+```C#
+[Route("Home/Details/{id?}")]
+public ViewResult Details(int? id)
+{
+    HomeDetailsViewModel homeDetailsViewModel = new HomeDetailsViewModel()
+    {
+        Employee = _employeeRepository.GetEmployee(id ?? 1),
+        PageTitle = "Employee Details"
+    };
 
+    return View(homeDetailsViewModel);
+}
+```
 
+With attribute routing the controller name and action method names play no role in which action is selected. Consider the example below. 
 
+```C#
+public class WelcomeController : Controller
+{
+    [Route("")]
+    [Route("Home")]
+    [Route("Home/Index")]
+    public ViewResult Welcome()
+    {
+        return View("~/Views/Home/Index.cshtml", _employeeRepository.GetAllEmployee());
+    }
+}
+```
 
+`View()` needs an absolute path because it need to pass model to some place, which the default is the action name. 
+However, the action name has been changed to `Welcome()`.
 
+**Attribute Routes are Hierarchical**
 
+The `Route()` attribute can be applied on the `Controller` class as well on the individual actions. To make attribute routing less repetitive, route attributes on the controller are combined with route attributes on the individual action methods. 
 
+```C#
+[Route("C")]
+public class CController : Controller
+{
+    [Route("A")]
+    public ViewResult A()
+    {
+        return View();
+    }
+}
+
+public class CController : Controller
+{
+    [Route("C/A")]
+    public ViewResult A()
+    {
+        return View();
+    }
+}
+```
+
+The two classes above have the same route
+
+However, use `Route()` on `Controller` means it is adding the class route to action regardless. In example above, there is always a `C/` in action.
+Using absolute path with start with `~/` to disable this feature.
+
+```C#
+[Route("Home")]
+public class HomeController : Controller
+{
+
+    [Route("~/")]
+    [Route("~/Home")]
+    [Route("Index")]
+    public ViewResult Index()
+    {
+        return View();
+    }
+}
+```
+
+With these templates in place, the `Index()` action method of the `HomeController` will be executed 
+for any of the following 3 URL paths.
+- `/`
+- `/Home`
+- `/Home/Index`
+
+**Tokens in Attribute Routing**
+
+Attribute routes support token replacement by enclosing a token in square-braces ([ ]). 
+The tokens `[controller]` and `[action]` are replaced with the values of the controller name and action name where the route is defined. 
+```C#
+[Route("[controller]/[action]")]
+public class HomeController : Controller
+{
+    [Route("~/")]
+    [Route("~/Home")]
+    public ViewResult Index()
+    {
+        return View();
+    }
+
+    [Route("{id?}")]
+    public ViewResult Details(int? id)
+    {
+        HomeDetailsViewModel homeDetailsViewModel = new HomeDetailsViewModel()
+        {
+            Employee = _employeeRepository.GetEmployee(id ?? 1),
+            PageTitle = "Employee Details"
+        };
+        return View(homeDetailsViewModel);
+    }
+}
+```
+
+**Conventional Routing vs Attribute Routing**
+
+With attribute routing, routes are placed next to the action methods that will actually use them. 
+Attribute routes offer a bit more flexibility than conventional routes. 
+
+However, in general, conventional routes are used for controllers that serve HTML pages, and attribute routes for controllers that serve REST APIs. 
+
+However, there is nothing stopping us from mixing conventional routing with attribute routing in a single application to get a bit more flexibility with routes.
+
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
