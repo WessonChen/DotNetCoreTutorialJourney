@@ -28,7 +28,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 20. [Ep 27 - List View in .Net Core MVC](#ep-27---list-view-in-net-core-mvc)
 21. [Ep 28 - Layout View in .Net Core MVC](#ep-28---layout-view-in-net-core-mvc)
 22. [Ep 29 - Sections in layout page in .Net Core MVC](#ep-29---sections-in-layout-page-in-net-core-mvc)
-
+23. [Ep 30 - ViewStart page in .Net Core MVC](#ep-30---viewstart-page-in-net-core-mvc)
+ 
 ## Notes
 #### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
 
@@ -1624,7 +1625,7 @@ This is our `details.cshtml` View
 </div>
 ```
 
-Also, you can have multiple layout view
+Also, you can have multiple layout views
 
 ##### [Back to Table of Contents](#table-of-contents)
 
@@ -1682,22 +1683,55 @@ Notice that we should not add `JavaScript` or `CSS` to pages directly.
 
 ##### [Back to Table of Contents](#table-of-contents)
 
+#### Ep 30 - [ViewStart page in .Net Core MVC](https://www.youtube.com/watch?v=r7WgjrTSlO8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=30)
 
+For now, we set the Layout property in each and every view. This violates DRY (Don't Repeat Yourself) principle, 
+and has disadvantages of **Redundant code** and **Maintenance overhead**.
 
+To use a different layout file, all the individual views need to be updated. This is not only tedious and time-consuming process, but also error prone.
 
+So, instead of setting the Layout property in each individual view, we can move that code into the `_ViewStart.cshtml` file.
 
+Let us create `root/Views/_ViewStart.cshtml` and add the following code.
 
+```HTML
+@{
+    Layout = "_Layout";
+}
+```
 
+Now, we can delete layout property in each individual view.
 
+**_ViewStart.cshtml file is hierarchical**
 
+We usually place the ViewStart file in the Views folder. Since this file is hierarchical we can also place it in any sub-folder in the Views folder.
 
+<p align="center">
+  <img src="https://i.ibb.co/FhZyDs3/View-Start-cshtml-in-ASP-NET-Core-MVC.png">
+</p>
 
+In the folder hierarchy above, we have placed one ViewStart file in the Views folder and another ViewStart file in the Home sub-folder. 
+The layout page specified in the ViewStart file in the Home sub-folder **overwrites** the layout page specified in the ViewStart file in the Views folder.
 
+If you want to use a layout file that is different from what is specified in _ViewStart.cshtml, 
+you can do so by setting the Layout property in an individual view, it **overwrites** all others. You can also set the Layout property to **null**, 
+if you want your view to be rendered without a layout view.
 
+Also, you can apply logic to layout view
+```HTML
+@{
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+    }
+    else
+    {
+        Layout = "_NonAdminLayout";
+    }
+}
+```
 
-
-
-
+##### [Back to Table of Contents](#table-of-contents)
 
 
 
