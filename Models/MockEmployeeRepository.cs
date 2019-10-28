@@ -19,6 +19,12 @@ namespace DotNetCoreTutorialJourney.Models
             };
         }
 
+        public void AddEmployee(Employee employee)
+        {
+            employee.Id = _employeeList.Max(e => e.Id) + 1;
+            _employeeList.Add(employee);
+        }
+
         public IEnumerable<Employee> GetAllEmployee()
         {
             return _employeeList;

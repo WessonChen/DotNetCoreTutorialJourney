@@ -36,6 +36,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 28. [Ep 37 - Image Tag Helpers in .Net Core MVC](#ep-37---image-tag-helpers-in-net-core-mvc)
 29. [Ep 38 - Environment Tag Helpers in .Net Core MVC](#ep-38---environment-tag-helpers-in-net-core-mvc)
 30. [Ep 40 - Form Tag Helpers in .Net Core MVC](#ep-40---form-tag-helpers-in-net-core-mvc)
+31. [Ep 41 - .Net Core MVC Model Binding](#ep-41---net-core-model-binding)
+32. [Ep 42 - .Net Core MVC Model Validation](#ep-42---net-core-model-validation)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -2301,6 +2303,107 @@ The above code generates the following HTML.
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 41 - [.Net Core Model Binding](https://www.youtube.com/watch?v=-GkZERrqEQo&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=41)
+
+**What is Model Binding**
+
+- Model binding maps data in an HTTP request to controller action method parameters
+- The action parameters may be simple types such as integers, strings, etc or complex types like Customer, Employee, Order etc.
+- Model binding is great, because without it we have to write lot of custom code to map request data to action method parameters 
+which is not only tedious but also error prone.
+
+**ASP.NET Core Model Binding Example**
+
+When an HTTP request arrives at our MVC application it is the `Controller action` method that handles the incoming request.
+
+```HTML
+http://localhost:xxxxx/home/details/2?name=tom&id=99&gendee=male
+```
+
+The following `Details()` action method handles the above request URL and maps the value `2` to the **id** parameter, 
+the value `tom` to the **name** parameter and the value `male` to the **gendee**.
+
+```C#
+public string Details(int? id, string name, string gender)
+{
+    return "id = " + id.Value.ToString() + " and name = " + name + " and gender = " + gender;
+}
+```
+
+Result
+
+```HTML
+id=2 and name= tom and gender =
+```
+
+In this case, the name mapped to parameter name, the gendee has a typo which means it mapped to parameter gendee instead of gender.
+
+And the mapped id value is 2 instead of 99, because model binding looks for data in the HTTP request in the following places in the order specified below.
+
+1. Form values
+2. Route values
+3. Query strings
+
+So, the id 2 here is Route values which has higher priority than the query strings 99.
+And because of the route value id here is optional, we can do this
+
+```HTML
+http://localhost:xxxxx/home/details?name=tom&id=99&gendee=male
+```
+
+Then the result will be
+
+```HTML
+id=99 and name= tom and gender =
+```
+
+**Model Binding Objects**
+
+In create form, we set the form method to `post` before. Let us implement it.
+
+First, in `IEmployeeRepository.cs` interface, we can add
+```C#
+void AddEmployee(Employee employee);
+```
+
+Then, we need to implement the repository `MockEmployeeRepository.cs`
+```C#
+public void AddEmployee(Employee employee)
+{
+    employee.Id = _employeeList.Max(e => e.Id) + 1;
+    _employeeList.Add(employee);
+}
+```
+In this case, the employee id will be auto-increment by 1.
+
+Then, we can add another `Create` class in the controller to handle the post.
+
+```C#
+[HttpGet]
+public ViewResult Create()
+{
+    return View();
+}
+[HttpPost]
+public RedirectToActionResult Create(Employee employee)
+{
+    _employeeRepository.AddEmployee(employee);
+    return RedirectToAction("details", new {id = employee.Id});
+}
+```
+
+To avoid ambiguity, we use `[HttpGet]` and `[HttpPost]` to specify two actions.
+And in post action, after adding employee, we redirect to the details page of that new employee. 
+```C#
+
+public virtual RedirectToActionResult RedirectToAction(string actionName, object routeValues);
+```
+
+Notice that the `RedirectToAction` can take two parameters here.
+
+#### [Back to Table of Contents](#table-of-contents)
+
+### Ep 42 - [.Net Core Model Validation](https://www.youtube.com/watch?v=aDRC_IgwmH8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=42)
 
 
 
@@ -2329,28 +2432,7 @@ The above code generates the following HTML.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

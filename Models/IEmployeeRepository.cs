@@ -9,5 +9,6 @@ namespace DotNetCoreTutorialJourney.Models
     {
         Employee GetEmployee(int id);
         IEnumerable<Employee> GetAllEmployee();
+        void AddEmployee(Employee employee);
     }
 }
