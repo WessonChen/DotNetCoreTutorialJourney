@@ -33,6 +33,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 25. [Ep 32 - Routing in .Net Core MVC](#ep-32---routing-in-net-core-mvc)
 26. [Ep 33 - Attribute Routing in .Net Core MVC](#ep-33---attribute-routing-in-net-core-mvc)
 27. [Ep 35 - Tag Helpers in .Net Core MVC](#ep-35---tag-helpers-in-net-core-mvc)
+28. [Ep 37 - Image Tag Helpers in .Net Core MVC](#ep-37---image-tag-helpers-in-net-core-mvc)
+29. [Ep 38 - Environment Tag Helpers in .Net Core MVC](#ep-38---environment-tag-helpers-in-net-core-mvc)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -1961,7 +1963,7 @@ However, there is nothing stopping us from mixing conventional routing with attr
 
 #### [Back to Table of Contents](#table-of-contents)
 
-### Ep 35 - [Tag helpers in .Net Core MVC]()
+### Ep 35 - [Tag helpers in .Net Core MVC](https://www.youtube.com/watch?v=iaSdTMdReWg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=35)
 
 Tag Helpers are server side components. They are processed on the server to create and render HTML elements in Razor files. 
 Tag Helpers are similar to HTML helpers.
@@ -2042,6 +2044,274 @@ the posted values are automatically handled and the associated validation messag
 Without these tag helpers we would have to write a lot of custom code to achieve the same. 
 
 #### [Back to Table of Contents](#table-of-contents)
+
+### Ep 37 - [Image Tag helpers in .Net Core MVC](https://www.youtube.com/watch?v=4jW9T-TLPTM&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=37)
+
+When we visit a web page, most modern browsers cache the images of that web page. 
+When we visit the page again, instead of downloading the same image again from the web server, 
+the browser serves the image from the cache. In most cases, this is not a problem as images do not change that frequently.
+
+From a performance standpoint, wouldn't it be great to download the image only if it has changed on the server. 
+If the image has not changed, use the image from the browser cache. This means we will have the best of both the worlds.
+
+Image Tag Helper can help us achieve this. To use the Image tag helper, 
+include `asp-append-version` attribute and set it to true.
+
+```HTML
+<img src="~/images/noimage.jpg" asp-append-version="true" />
+```
+**Image Tag Helper** enhances the `<img>` tag to provide **cache-busting behavior** for static image files. 
+Based on the content of the image, a unique hash value is calculated and is appended to image URL. 
+This unique string prompts the browser to reload the image from the server and not from the browser cache.
+
+```HTML
+<img class="card-img-top" src="/images/noimage.jpg?v=IqNLbsazJ7ijEbbyzWPke-xWxkOFaVcgzpQ4SsQKBqY" />
+```
+
+#### [Back to Table of Contents](#table-of-contents)
+
+### Ep 38 - [Environment Tag helpers in .Net Core MVC](https://www.youtube.com/watch?v=-E4zP2L-R_U&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=38)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### [Back to Table of Contents](#table-of-contents)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
