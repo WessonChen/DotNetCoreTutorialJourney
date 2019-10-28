@@ -35,6 +35,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 27. [Ep 35 - Tag Helpers in .Net Core MVC](#ep-35---tag-helpers-in-net-core-mvc)
 28. [Ep 37 - Image Tag Helpers in .Net Core MVC](#ep-37---image-tag-helpers-in-net-core-mvc)
 29. [Ep 38 - Environment Tag Helpers in .Net Core MVC](#ep-38---environment-tag-helpers-in-net-core-mvc)
+30. [Ep 40 - Form Tag Helpers in .Net Core MVC](#ep-40---form-tag-helpers-in-net-core-mvc)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -2149,21 +2150,156 @@ Obviously, there is some processing involved to calculate hash and compare it wi
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 40 - [Form Tag helpers in .Net Core MVC](https://www.youtube.com/watch?v=mU4hV50rkVE&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=40)
 
+We use the following common tag helpers to create a form in ASP.NET Core
+- Form Tag Helper
+- Label Tag Helper
+- Input Tag Helper
+- Select Tag Helper
+- Textarea Tag Helper
+- Validation Tag Helper
 
+**Form Tag Helper**
 
+To create a form we use the `<form>` tag helper
 
+Notice, we are using `asp-controller` and `asp-action` tag helpers. 
+These 2 tag helpers specify the controller and the action method to which the form data must be posted when the form is submitted. 
+We want to issue a `POST` request when the form is submitted, so we have set the method attribute to `post`
 
+```HTML
+<form asp-controller="home" asp-action="create" method="post">
+</form>
+```
 
+The above code produces the following HTML when the form is rendered on the client browser.
 
+```HTML
+<form method="post" action="/home/create"></form>
+```
 
+**Please note** : By default, when a form is submitted, it will be posted to the same action of the controller that rendered the form. 
+So this means, even if we did not specify the controller and action using the asp-controller and asp-action tag helpers, 
+the form will still be posted to the index() action of the HomeController.
 
+**Input Tag Helper**
 
+First, we can import `Employee` class because we want to create a new employee.
 
+```HTML
+@model Employee
+```
 
+To b able to capture the employee name we want a text box. We want the text box to **bind to the Name property of the Employee model class**. 
+We do this by using `asp-for` tag helper and setting it's value to the Name property of the Employee model class. 
+Notice we also have intellisense. Later if we change the property name form Name to FullName on the Employee class, 
+and if we do not change the value assigned to the tag helper, we get a compiler error.
 
+```HTML
+<input asp-for="Name">
+```
 
+The above code generates an input element with id and name attributes. Notice both of them are set to a value of Name. 
 
+```HTML
+<input type="text" id="Name" name="Name" value="">
+```
+
+The name attribute is **required** and it is used to **map the value of the input element to the corresponding property of the model class** when the form is submitted. 
+This is done by a process called **model binding** in ASP.NET Core. 
+
+**Label Tag Helper**
+
+The Label Tag Helper generates a label with for attribute. The for attribute links the label with it's associated input element.
+
+```HTML
+<label asp-for="Name"></label>
+<input asp-for="Name">
+```
+
+The above code generates the following HTML. 
+
+```HTML
+<label for="Name">Name</label>
+<input type="text" id="Name" name="Name" value="">
+```
+
+The label is linked to the input element, because both the label for attribute and the input element id attribute have the same value (Name). 
+So this means when we click on the label, the corresponding input element receives the focus.
+
+**Select Tag Helper**
+
+The options for the department select element can be hard-coded, or they can come from an **`enum`** or a **database table**.
+
+Place the following `enum` in `Dept.cs` file in the `Models` folder
+
+```C#
+namespace EmployeeManagement.Models
+{
+    public enum Dept
+    {
+        None,
+        HR,
+        IT,
+        Payroll
+    }
+}
+```
+
+Update the `Employee` class in `Employee.cs` file in the Models folder
+Department property data type is Dept `enum`.
+
+```C#
+namespace EmployeeManagement.Models
+{
+    public class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public Dept Department { get; set; }
+    }
+}
+```
+
+In `MockEmployeeRepository.cs` we change the code to this `Department = Dept.HR`
+
+```C#
+public MockEmployeeRepository()
+        {
+            _employeeList = new List<Employee>()
+            {
+                new Employee() { Id = 1, Name = "Mary", Department = Dept.HR, Email = "mary@gmail.com" },
+                new Employee() { Id = 2, Name = "John", Department = Dept.IT, Email = "john@gmail.com" },
+                new Employee() { Id = 3, Name = "Sam", Department = Dept.IT, Email = "sam@gmail.com" },
+            };
+        }
+```
+
+In `Create.cshtml` view, include the following code
+
+```HTML
+<label asp-for="Department"></label>
+<select asp-for="Department"
+        asp-items="Html.GetEnumSelectList<Dept>()"></select>
+```
+
+The above code generates the following HTML. 
+
+```HTML
+<div>
+    <label for="Department">Department</label>
+    <select id="Department" name="Department">
+        <option value="0">None</option>
+        <option value="1">HR</option>
+        <option value="2">IT</option>
+        <option value="3">Payroll</option>
+    </select>
+</div>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
