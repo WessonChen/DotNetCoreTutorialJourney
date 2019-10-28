@@ -34,6 +34,11 @@ namespace DotNetCoreTutorialJourney
 
             app.UseStaticFiles();
             app.UseMvcWithDefaultRoute();
+
+            // app.Run(async (context) => 
+            // {
+            //     await context.Response.WriteAsync(env.EnvironmentName);
+            // });
         }
     }
 }

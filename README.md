@@ -2072,23 +2072,83 @@ This unique string prompts the browser to reload the image from the server and n
 
 ### Ep 38 - [Environment Tag helpers in .Net Core MVC](https://www.youtube.com/watch?v=-E4zP2L-R_U&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=38)
 
+- For ease of debugging, on our local development machine (i.e on the **Development Environment**) we want the application to load non-minified bootstrap css file (bootstrap.css)
 
+- On **Staging, Production** or any other environment except Development environment we want the application to load minified bootstrap css file (bootstrap.min.css) 
+from a **CDN** (Content Delivery Network) for better performance.
 
+- However, if the **CDN is down** or for some reason, our application is not able to reach the CDN, 
+we want our application to fallback and load the minified bootstrap file (bootstrap.min.css) from our own application web server.
 
+We can achieve this very easily using ASP.NET Core `<environment>` tag helper.
 
+Use the `ASPNETCORE_ENVIRONMENT` variable to set the application environment. 
+On our local development machine we usually set this environment variable in `launchsettings.json file`. 
+On a staging or production environment it is set **in the operating system**. 
 
+When we add script to `_Layout.cshtml`, we can do
+```HTML
+    <environment include="Development">
+        <link href="~/node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+        <script src="~/node_modules/jquery/dist/jquery.slim.js"></script>
+        <script src="~/node_modules/popper.js/dist/umd/popper.js"></script>
+        <script src="~/node_modules/bootstrap/dist/js/bootstrap.js"></script>
+    </environment>
 
+    <environment exclude="Development">
+        <link rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+            crossorigin="anonymous"
+            asp-fallback-href="~/node_modules/bootstrap/dist/css/bootstrap.min.css"
+            asp-fallback-test-class="sr-only" 
+            asp-fallback-test-property="position"
+            asp-fallback-test-value="absolute"
+            asp-suppress-fallback-integrity="true" />
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"
+            asp-fallback-href="~/node_modules/jquery/dist/jquery.slim.min.js"
+            asp-fallback-test-class="sr-only" 
+            asp-fallback-test-property="position"
+            asp-fallback-test-value="absolute"
+            asp-suppress-fallback-integrity="true"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"
+            asp-fallback-href="~/node_modules/popper.js/dist/umd/popper.min.js"
+            asp-fallback-test-class="sr-only" 
+            asp-fallback-test-property="position"
+            asp-fallback-test-value="absolute"
+            asp-suppress-fallback-integrity="true"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"
+            asp-fallback-href="~/node_modules/bootstrap/dist/js/bootstrap.min.js"
+            asp-fallback-test-class="sr-only" 
+            asp-fallback-test-property="position"
+            asp-fallback-test-value="absolute"
+            asp-suppress-fallback-integrity="true"></script>
+    </environment>
+```
 
+ the application environment is "Development", non-minified bootstrap css file (bootstrap.css) is loaded from our application web server
 
+If the application environment IS NOT "Development", minified bootstrap css file (bootstrap.min.css) is loaded from the CDN
 
+A fallback source is specified using asp-fallback-href attribute. This means, if the CDN is down, our application fallsback and load the minified bootstrap file (bootstrap.min.css) from our own application web server
 
+The following 3 attributes and their associated values are used to check if the CDN is down
+```C#==HTML
+asp-fallback-test-class="sr-only" 
+asp-fallback-test-property="position" 
+asp-fallback-test-value="absolute"
+```
 
-
-
-
-
+Obviously, there is some processing involved to calculate hash and compare it with the integrity attribute hash value. For most applications, fallback source is their own server. You have the option to turn off integrity check for the files downloaded from the fallback source by setting `asp-suppress-fallback-integrity` attribute to `true`.
 
 #### [Back to Table of Contents](#table-of-contents)
+
 
 
 
