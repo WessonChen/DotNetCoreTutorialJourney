@@ -38,6 +38,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 30. [Ep 40 - Form Tag Helpers in .Net Core MVC](#ep-40---form-tag-helpers-in-net-core-mvc)
 31. [Ep 41 - .Net Core MVC Model Binding](#ep-41---net-core-model-binding)
 32. [Ep 42 - .Net Core MVC Model Validation](#ep-42---net-core-model-validation)
+33. [Ep 43 - .Net Core Model Select List Validation](#ep-43---net-core-model-select-list-validation)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -2460,23 +2461,38 @@ Which means both `RedirectToAction` and `View` are implementation of `IActionRes
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 43 - [.Net Core Model Select List Validation](https://www.youtube.com/watch?v=woFHR3iNEEI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=43)
 
+First, we can add an option `Please Selet` with value `""` to the list.
 
+```HTML
+<div>
+    <label asp-for="Department"></label>
+    <div>
+        <select asp-for="Department" asp-items="Html.GetEnumSelectList<Dept>()">
+            <option value="">Please Select</option>
+        </select>
+        <span asp-validation-for="Department" class="text-danger"></span>
+    </div>
+</div>
+```
 
+Then, when we submit with this option, the error message will be 
+```HTML
+The value '' is invalid.
+```
 
+This is because we are using `enum` in `Dept.cs`, which each elements there has a value start from `0`. 
+However, the value we are submitting is `null` and the `Department` attribute in `Employee` class is not `nullable`. 
+Which gives the above error message.
 
+So, we can make the `Department` attribute `nullable` and `required` for validation.
+```C#
+[Required]
+public Dept? Department { get; set; }
+```
 
-
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
