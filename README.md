@@ -43,6 +43,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 35. [Ep 45 - Entity Framework Core](#ep-45---entity-framework-core)
 36. [Ep 46 - Install Entity Framework Core](#ep-46---install-entity-framework-core)
 37. [Ep 47 - DbContext in Entity Framework Core](#ep-47---dbContext-in-entity-framework-core)
+38. [Ep 48 - Using sql server with Entity Framework Core](#ep-48---using-sql-server-with-entity-framework-core)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -2693,28 +2694,58 @@ public class AppDbContext : DbContext
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 48 - [Using sql server with Entity Framework Core](https://www.youtube.com/watch?v=xMktEpPmadI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=48)
 
+When using Entity Framework Core, one of the important things that we need to configure is the database provider that we plan to use. 
+Entity Framework Core supports a wide variety of databases including non-relational databases. 
+The following MSDN link has the list of all supported databases.
+> https://docs.microsoft.com/en-us/ef/core/providers/ 
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddDbContextPool<AppDbContext>(
+		options => options.UseSqlServer(_config.GetConnectionString("EmployeeDBConnection")));
+	services.AddMvc().AddXmlSerializerFormatters();
+	services.AddTransient<IEmployeeRepository, MockEmployeeRepository>();
+    }
+```
 
+- We want to configure and use Microsoft SQL Server with entity framework core.
+- We usually specify this configuration in `ConfigureServices()` method in `Startup.cs` file.
 
+**Difference between `AddDbContext()` and `AddDbContextPool()` methods**
+- We can use either `AddDbContext()` or `AddDbContextPool()` method to register our application specific DbContext class with the ASP.NET Core dependency injection system.
+- The difference between `AddDbContext()` and `AddDbContextPool()` methods is, `AddDbContextPool()` method provides **DbContext pooling**.
+- With **DbContext pooling**, an instance from the DbContext pool is provided if available, rather than creating a new instance.
+- From a performance standpoint `AddDbContextPool()` method is **better** over `AddDbContext()` method.
+- `AddDbContextPool()` method is introduced in ASP.NET Core 2.0. So if you are using ASP.NET Core 2.0 or later use `AddDbContextPool()` method over `AddDbContext()` method.
 
+**UseSqlServer() Extension Method**
+- `UseSqlServer()` extension method is used to configure our application specific DbContext class to use Microsoft SQL Server as the database.
+- To connect to a database, we need the database connection string which is provided as a parameter to `UseSqlServer()` extension method.
 
+**Database Connection String in ASP.NET Core**
 
+Instead of hard-coding the connection string in application code, we store it `appsettings.json` configuration file. 
 
+```json
+{
+  "ConnectionStrings": {
+    "EmployeeDBConnection": "server=(localdb)\\MSSQLLocalDB;database=EmployeeDB;Trusted_Connection=true"
+  }
+}
+```
+To read connection string from `appsettings.json` file we use `IConfiguration` service `GetConnectionString()` method. 
 
+What is the difference between the following in a database connection string 
+- Trusted_Connection=True;
+- Integrated Security=SSPI;
+- Integrated Security=true;
 
+All the above 3 settings specify the same thing, use Integrated Windows Authentication to connect to SQL Server instead of using SQL Server authentication. 
 
-
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
