@@ -39,6 +39,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 31. [Ep 41 - .Net Core MVC Model Binding](#ep-41---net-core-model-binding)
 32. [Ep 42 - .Net Core MVC Model Validation](#ep-42---net-core-model-validation)
 33. [Ep 43 - .Net Core Model Select List Validation](#ep-43---net-core-model-select-list-validation)
+34. [Ep 44 - AddSingleton vs AddScoped vs AddTransient](#ep-44---addSingleton-vs-addscoped-vs-addtransient)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -2482,8 +2483,8 @@ Then, when we submit with this option, the error message will be
 The value '' is invalid.
 ```
 
-This is because we are using `enum` in `Dept.cs`, which each elements there has a value start from `0`. 
-However, the value we are submitting is `null` and the `Department` attribute in `Employee` class is not `nullable`. 
+This is because we are using `enum` in `Dept.cs`, which by default an `enum` underlying data type is `int`, start from `0`. 
+However, the value we are submitting is `""` and value types (such as int, float, decimal, DateTime) are **inherently required and don't need the Required attribute**.
 Which gives the above error message.
 
 So, we can make the `Department` attribute `nullable` and `required` for validation.
@@ -2494,21 +2495,24 @@ public Dept? Department { get; set; }
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 44 - [AddSingleton vs AddScoped vs AddTransient](https://www.youtube.com/watch?v=v6Nr7Zman_Y&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=44)
 
+With a singleton service, there is only a single instance. An instance is created, 
+when the service is first requested and that single instance is used by all http requests throughout the application.
 
+With a scoped service we get the same instance within the scope of a given http request 
+but a new instance across different http requests.
 
+With a transient service a new instance is provided everytime an instance is requested 
+whether it is in the scope of the same http request or across different http requests.
 
+**Service Type** | **In the scope of a given http request** | Across different http requests**
+:---: | :---: | :---:
+Singleton Service | Same Instance | Same Instance
+Scoped Service | Same Instance | New Instance
+Transient Service | New Instance | New Instance
 
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
