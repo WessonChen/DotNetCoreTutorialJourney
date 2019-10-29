@@ -2587,22 +2587,57 @@ The database provider contains the functionality specific to the database it sup
 
 ### Ep 46 - [Install Entity Framework Core](https://www.youtube.com/watch?v=8aHzSx-inDE&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=46)
 
+Depending on how you have your project set up, you may have Entity Framework Core already installed. 
 
+**Single Layer Web Application**
 
+If it's a small project, you may have your presentation layer, business layer and data access layer all in one project. 
+So if you have created a web application project using ASP.NET Core 2.1 or higher, then in that web application project, 
+you already have Entity Framework Core installed. 
 
+**Entity Framework Core in ASP.NET Core Web Application Project**
 
+An ASP.NET Core Web application project that is created using ASP.NET Core 2.1 or higher has the following NuGet package installed. 
+> Microsoft.AspNetCore.App
 
+This package is called - metapackage. A metapackage has no content of its own but is a list of dependencies (other packages). 
+You can find this metapackage, in the Solution Explorer. When you expand the metapackage, you can find all the dependencies. 
+In the dependencies you will find the Entity Framework Core nuget packages already installed. 
 
+**Multi Layer Web Application**
 
+In a large application we will usually have at least the following 3 layers 
+- Presentation Layer
+- Business Logic Layer
+- Data Access Layer
 
+These layers are implemented as separate projects. Entity Framework Core is usually required in the Data Access Layer project. 
+The Data Access Layer project is a class library project and does not usually have the meta package referenced. So this means, 
+Entity Framework Core is not installed for the Data Access Layer project. 
 
+To install Entity Framework Core and to be able to use SQL server as the database for your application, 
+you need to install the following nuget packages. 
 
+**Package**	| **Purpose**
+:---: | :---:
+Microsoft.EntityFrameworkCore.SqlServer	| This nuget package contains SQL Server specific functionality
+Microsoft.EntityFrameworkCore.Relational | This nuget package contains functionality that is common to all relational databases
+Microsoft.EntityFrameworkCore | This nuget package contains common entity frameowrk core functionality
 
+<p align="center">
+  <img src="https://i.ibb.co/ckxGV2P/install-ef-core-in-visual-studio.png">
+</p>
 
+This image is the dependant relationships. When we install `Microsoft.EntityFrameworkCore.SqlServer` package, 
+it also installs all the other dependant nuget packages automatically.  
 
+If you want to use a different database with your application, then you will have to install that database provider specific nuget package 
+instead of `Microsoft.EntityFrameworkCore.SqlServer` database provider package. 
 
+For example, if you want to use mysql as your database, then install `Pomelo.EntityFrameworkCore.MySql` database provider package. 
 
-
+You can find all the provider specific NuGet packages on the following MSDN page
+> https://docs.microsoft.com/en-us/ef/core/providers/ 
 
 #### [Back to Table of Contents](#table-of-contents)
 
