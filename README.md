@@ -2405,32 +2405,58 @@ Notice that the `RedirectToAction` can take two parameters here.
 
 ### Ep 42 - [.Net Core Model Validation](https://www.youtube.com/watch?v=aDRC_IgwmH8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=42)
 
+First, we need to modify the model attributes
+```C#
+public class Employee
+{
+    public int Id { get; set; }
+    [Required, MaxLength(50, ErrorMessage = "Name cannot exceed 50 characters")]
+    public string Name { get; set; }
+    [Display(Name = "Office Email")]
+    [RegularExpression(@"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$",
+        ErrorMessage = "Invalid email format")]
+    [Required]
+    public string Email { get; set; }
+    public Dept Department { get; set; }
+}
+```
 
+**ASP.NET Core Built-in Model Validation Attributes**
 
+The following are some of the common built-in validation attributes in ASP.NET Core.
 
+**Attribute** | **Purpose**
+:---: | :---:
+Required | Specifies the field is required
+Range | Specifies the minimum and maximum value allowed
+MinLength | Specifies the minimum length of a string
+MaxLength | Specifies the maximum length of a string
+Compare | Compares 2 properties of a model. For example compare Email and ConfirmEmail properties
+RegularExpression | Validates if the provided value matches the pattern specified by the regular expression
 
+Then, we can display the validation message in the page
+```HTML
+<span asp-validation-for="Name" class="text-danger"></span>
+<span asp-validation-for="Email" class="text-danger"></span>
+<div asp-validation-summary="All" class="text-danger"></div>
+```
 
+Last, we add conditions in the action, if the model is not valid, the redirect will not happen.
 
+```C#
+public IActionResult Create(Employee employee)
+{
+    if (ModelState.IsValid) 
+    {
+        _employeeRepository.AddEmployee(employee);
+        return RedirectToAction("details", new {id = employee.Id});
+    }
+    return View();
+}
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Notice that since we return both `RedirectToAction` and `View` in this method, we changed return type `ReidrectToActionResult` to `IActionResult`. 
+Which means both `RedirectToAction` and `View` are implementation of `IActionResult`.
 
 #### [Back to Table of Contents](#table-of-contents)
 

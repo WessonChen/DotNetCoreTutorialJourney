@@ -37,10 +37,14 @@ namespace DotNetCoreTutorialJourney.Controllers
             return View();
         }
         [HttpPost]
-        public RedirectToActionResult Create(Employee employee)
+        public IActionResult Create(Employee employee)
         {
-            _employeeRepository.AddEmployee(employee);
-            return RedirectToAction("details", new {id = employee.Id});
+            if (ModelState.IsValid) 
+            {
+                _employeeRepository.AddEmployee(employee);
+                return RedirectToAction("details", new {id = employee.Id});
+            }
+            return View();
         }
     }
 }
