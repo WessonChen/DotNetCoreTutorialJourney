@@ -44,6 +44,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 36. [Ep 46 - Install Entity Framework Core](#ep-46---install-entity-framework-core)
 37. [Ep 47 - DbContext in Entity Framework Core](#ep-47---dbContext-in-entity-framework-core)
 38. [Ep 48 - Using sql server with Entity Framework Core](#ep-48---using-sql-server-with-entity-framework-core)
+39. [Ep 49 - Repository Pattern in Entity Framework Core](#ep-49---repository-pattern-in-entity-framework-core)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -2707,8 +2708,8 @@ public void ConfigureServices(IServiceCollection services)
     services.AddDbContextPool<AppDbContext>(
 		options => options.UseSqlServer(_config.GetConnectionString("EmployeeDBConnection")));
 	services.AddMvc().AddXmlSerializerFormatters();
-	services.AddTransient<IEmployeeRepository, MockEmployeeRepository>();
-    }
+	services.AddSingleton<IEmployeeRepository, MockEmployeeRepository>();
+}
 ```
 
 - We want to configure and use Microsoft SQL Server with entity framework core.
@@ -2747,23 +2748,196 @@ All the above 3 settings specify the same thing, use Integrated Windows Authenti
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 49 - [Repository Pattern in Entity Framework Core](https://www.youtube.com/watch?v=qJmEI2LtXIY&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=49)
 
+**What is Repository Pattern**
 
+Repository Pattern is an abstraction of the Data Access Layer. It hides the details of how exactly the data is saved or retrieved from the underlying data source. 
+The details of how the data is stored and retrieved is in the respective repository. For example, you may have a repository that stores and retrieves data from an in-memory collection. 
+You may have another repository that stores and retrieves data from a database like SQL Server
 
+```C#
+public class Employee
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public Dept? Department { get; set; }
+}
+```
 
+**Repository Pattern Interface**
 
+The interface in the repository pattern specifies 
+- What operations (i.e methods) are supported by the repository
+- The data required for each of the operations i.e the parameters that need to be passed to the method and the data the method returns
+- The repository interface contains what it can do, but not, how it does, what it can do
+- The implementation details are in the respective repository class that implements the repository Interface
 
+```C#
+public interface IEmployeeRepository
+{
+    Employee GetEmployee(int Id);
+    IEnumerable<Employee> GetAllEmployee();
+    Employee Add(Employee employee);
+    Employee Update(Employee employeeChanges);
+    Employee Delete(int Id);
+}
+```
 
+**Repository Pattern - In-memory Implementation**
 
+The following `MockEmployeeRepository` class provides an implementation for `IEmployeeRepository`. 
+This specific implementation stores and retrieves employees from an in-memory collection. 
 
+```C#
+public class MockEmployeeRepository : IEmployeeRepository
+{
+    private List<Employee> _employeeList;
 
+    public MockEmployeeRepository()
+    {
+        _employeeList = new List<Employee>()
+        {
+            new Employee() { Id = 1, Name = "Mary", Department = Dept.HR, Email = "mary@gmail.com" },
+            new Employee() { Id = 2, Name = "John", Department = Dept.IT, Email = "john@gmail.com" },
+            new Employee() { Id = 3, Name = "Sam", Department = Dept.IT, Email = "sam@gmail.com" },
+        };
+    }
 
+    public Employee Add(Employee employee)
+    {
+        employee.Id = _employeeList.Max(e => e.Id) + 1;
+        _employeeList.Add(employee);
+        return employee;
+    }
 
+    public Employee Delete(int Id)
+    {
+        Employee employee = _employeeList.FirstOrDefault(e => e.Id == Id);
+        if (employee != null)
+        {
+            _employeeList.Remove(employee);
+        }
+        return employee;
+    }
 
+    public IEnumerable<Employee> GetAllEmployee()
+    {
+        return _employeeList;
+    }
 
+    public Employee GetEmployee(int Id)
+    {
+        return this._employeeList.FirstOrDefault(e => e.Id == Id);
+    }
 
+    public Employee Update(Employee employeeChanges)
+    {
+        Employee employee = _employeeList.FirstOrDefault(e => e.Id == employeeChanges.Id);
+        if (employee != null)
+        {
+            employee.Name = employeeChanges.Name;
+            employee.Email = employeeChanges.Email;
+            employee.Department = employeeChanges.Department;
+        }
+        return employee;
+    }
+}
+```
 
+**Repository Pattern - SQL Server Implementation**
 
+The following `SQLEmployeeRepository` class provides another implementation for `IEmployeeRepository`. 
+This specific implementation stores and retrieves employees from a sql server database using entity framework core. 
+
+```C#
+public class SQLEmployeeRepository : IEmployeeRepository
+{
+    private readonly AppDbContext context;
+
+    public SQLEmployeeRepository(AppDbContext context)
+    {
+        this.context = context;
+    }
+
+    public Employee Add(Employee employee)
+    {
+        context.Employees.Add(employee);
+        context.SaveChanges();
+        return employee;
+    }
+
+    public Employee Delete(int Id)
+    {
+        Employee employee = context.Employees.Find(Id);
+        if (employee != null)
+        {
+            context.Employees.Remove(employee);
+            context.SaveChanges();
+        }
+        return employee;
+    }
+
+    public IEnumerable<Employee> GetAllEmployee()
+    {
+        return context.Employees;
+    }
+
+    public Employee GetEmployee(int Id)
+    {
+        return context.Employees.Find(Id);
+    }
+
+    public Employee Update(Employee employeeChanges)
+    {
+        var employee = context.Employees.Attach(employeeChanges);
+        employee.State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        context.SaveChanges();
+        return employeeChanges;
+    }
+}
+```
+
+**Which implementation to use** 
+
+Take a look at the following `HomeController` in our application. ASP.NET Core Dependency injection system injects an instance of `IEmployeeRepository`. 
+
+```C#
+public class HomeController : Controller
+{
+    private IEmployeeRepository _employeeRepository;
+
+    public HomeController(IEmployeeRepository employeeRepository)
+    {
+        _employeeRepository = employeeRepository;
+    }
+
+    // Rest of the code
+}
+```
+
+There are 2 implementations for `IEmployeeRepository` interface. How does the application know which implementation to use. 
+The answer to this is in `Startup` class in `Startup.cs` file. With the following line of code, 
+ASP.NET Core provides an instance of `SQLEmployeeRepository` class when an instance of `IEmployeeRepository` is requested. 
+
+We are using` AddScoped()` method because we want the instance to be alive and available for the entire scope of the given HTTP request. 
+For another new HTTP request, a new instance of `SQLEmployeeRepository` class will be provided and it will be available throughout the entire scope of that HTTP request. 
+
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    // Rest of the code
+    services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
+}
+```
+
+**Benefits of Repository Pattern**
+- The code is cleaner, and easier to reuse and maintain.
+- Enables us to create loosely coupled systems.
+- In an unit testing project, it is easy to replace a real repository with a fake implementation for testing.
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

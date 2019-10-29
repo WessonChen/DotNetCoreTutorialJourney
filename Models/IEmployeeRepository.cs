@@ -4,10 +4,10 @@ namespace DotNetCoreTutorialJourney.Models
 {
     public interface IEmployeeRepository
     {
-        Employee GetEmployee(int id);
-
+        Employee AddEmployee(Employee employee);
+        Employee DeleteEmployee(int id);
         IEnumerable<Employee> GetAllEmployee();
-
-        void AddEmployee(Employee employee);
+        Employee GetEmployee(int id);
+        Employee UpdateEmployee(Employee employeeChanges);
     }
 }

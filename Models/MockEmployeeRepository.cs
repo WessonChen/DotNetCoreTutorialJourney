@@ -17,10 +17,19 @@ namespace DotNetCoreTutorialJourney.Models
             };
         }
 
-        public void AddEmployee(Employee employee)
+        public Employee AddEmployee(Employee employee)
         {
             employee.Id = _employeeList.Max(e => e.Id) + 1;
             _employeeList.Add(employee);
+            return employee;
+        }
+
+        public Employee DeleteEmployee(int id)
+        {
+            Employee employee = _employeeList.FirstOrDefault(emp => emp.Id == id);
+            if (employee != null)
+                _employeeList.Remove(employee);
+            return employee;
         }
 
         public IEnumerable<Employee> GetAllEmployee()
@@ -31,6 +40,18 @@ namespace DotNetCoreTutorialJourney.Models
         public Employee GetEmployee(int id)
         {
             return this._employeeList.FirstOrDefault(emp => emp.Id == id);
+        }
+
+        public Employee UpdateEmployee(Employee employeeChanges)
+        {
+            Employee employee = _employeeList.FirstOrDefault(emp => emp.Id == employeeChanges.Id);
+            if (employee != null)
+            {
+                employee.Name = employeeChanges.Name;
+                employee.Email = employeeChanges.Email;
+                employee.Department = employeeChanges.Department;
+            }
+            return employee;
         }
     }
 }
