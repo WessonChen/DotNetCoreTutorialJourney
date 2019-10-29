@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DotNetCoreTutorialJourney.Models;
+﻿using DotNetCoreTutorialJourney.Models;
 using DotNetCoreTutorialJourney.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +12,7 @@ namespace DotNetCoreTutorialJourney.Controllers
         {
             _employeeRepository = employeeRepository;
         }
+
         public ViewResult Index()
         {
             return View(_employeeRepository.GetAllEmployee());
@@ -31,18 +28,20 @@ namespace DotNetCoreTutorialJourney.Controllers
 
             return View(homeDetailsViewModel);
         }
+
         [HttpGet]
         public ViewResult Create()
         {
             return View();
         }
+
         [HttpPost]
         public IActionResult Create(Employee employee)
         {
-            if (ModelState.IsValid) 
+            if (ModelState.IsValid)
             {
                 _employeeRepository.AddEmployee(employee);
-                return RedirectToAction("details", new {id = employee.Id});
+                return RedirectToAction("details", new { id = employee.Id });
             }
             return View();
         }

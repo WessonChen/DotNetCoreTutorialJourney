@@ -42,6 +42,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 34. [Ep 44 - AddSingleton vs AddScoped vs AddTransient](#ep-44---addSingleton-vs-addscoped-vs-addtransient)
 35. [Ep 45 - Entity Framework Core](#ep-45---entity-framework-core)
 36. [Ep 46 - Install Entity Framework Core](#ep-46---install-entity-framework-core)
+37. [Ep 47 - DbContext in Entity Framework Core](#ep-47---dbContext-in-entity-framework-core)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -2641,28 +2642,56 @@ You can find all the provider specific NuGet packages on the following MSDN page
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 47 - [DbContext in Entity Framework Core](https://www.youtube.com/watch?v=nN9jOORIFtc&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=47)
 
+One of the very important classes in Entity Framework Core is the `DbContext` class. This is the class that we use in our application code 
+to interact with the underlying database. It is this class that manages the database connection and is used to retrieve and save data in the database. 
 
+**To use the DbContext class in our application**
+- We create a class that derives from the `DbContext` class.
+- `DbContext` class is in `Microsoft.EntityFrameworkCore` namespace.
 
+```C#
+public class AppDbContext : DbContext
+{
+}
+```
 
+**DbContextOptions in Entity Framework Core**
+- For the `DbContext` class to be able to do any useful work, it needs an instance of the `DbContextOptions` class.
+- The `DbContextOptions` instance carries configuration information such as the connection string, database provider to use etc.
+- To pass the `DbContextOptions` instance we use the constructor as shown in the example below.
 
+```C#
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
+}
+```
 
+**Entity Framework Core DbSet**
+- The `DbContext` class includes a `DbSet<TEntity>` property for each entity in the model.
+- At the moment in our application we have, only one entity class - `Employee`.
+- So in our `AppDbContext` class we only have one `DbSet<Employee>` property.
+- We will use this `DbSet` property `Employees` to query and save instances of the `Employee` class.
+- The LINQ queries against the `DbSet<TEntity>` will be translated into queries against the underlying database.
 
+```C#
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
 
+    public DbSet<Employee> Employees { get; set; }
+}
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
