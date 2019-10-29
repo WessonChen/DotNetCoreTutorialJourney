@@ -40,6 +40,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 32. [Ep 42 - .Net Core MVC Model Validation](#ep-42---net-core-model-validation)
 33. [Ep 43 - .Net Core Model Select List Validation](#ep-43---net-core-model-select-list-validation)
 34. [Ep 44 - AddSingleton vs AddScoped vs AddTransient](#ep-44---addSingleton-vs-addscoped-vs-addtransient)
+35. [Ep 45 - Entity Framework Core](#ep-45---entity-framework-core)
+36. [Ep 46 - Install Entity Framework Core](#ep-46---install-entity-framework-core)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -2514,6 +2516,76 @@ Transient Service | New Instance | New Instance
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 45 - [Entity Framework Core](https://www.youtube.com/watch?v=OE0_9c-K-Ow&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=45)
+
+**What is EF Core**
+
+EF Core is an ORM (Object-Relational Mapper). EF core is lightweight, extensible, and open source software. Like .NET Core, EF Core is also cross platform.
+
+**What is ORM**
+
+ORM stands for Object-Relational Mapper and it enables developers to work with a database using business objects. 
+As a developer we work with the application business objects and the ORM generates the SQL that the underlying database understands. 
+In-short, an ORM, eliminates the need for most of the data-access code that developers usually need to write.  
+
+**Why use an ORM**
+
+If we are developing an application to manage employees we would have classes like Employee, Department etc in our application code. 
+These classes are called the Domain classes. 
+
+Without an ORM like EF Core, we have to write a lot of custom data access code to store and retrieve employee and department data from the underlying database. 
+
+For example to read, insert, update or delete data from the underlying database table we have to write code in the application 
+to generate the required sql statements that the underlying database understands. Also when the data is read from the database into our application, 
+we again have to write custom code to map the database data to our model classes like Employee, Department etc.
+
+An ORM like EF Core can do all of this for us and saves a lot of time. It sits between our application code and the Database. 
+It eliminates the need for most of the custom data-access code that we usually have to write without an ORM. 
+
+<p align="center">
+  <img src="https://i.ibb.co/YTGtFCz/entity-framework-core-tutorial.png">
+</p>
+
+**EF Core Code First Approach**
+
+EF Core supports both Code First approach and Database First approach. 
+However, with the Database First approach there is very limited support in EF core at the moment. 
+
+<p align="center">
+  <img src="https://i.ibb.co/5K9QVQV/ef-core-code-first-approach.png">
+</p>
+
+With the Code First Approach, we first create our application domain classes like Employee, Customer etc and a special class that derives from Entity Framework `DbContext` class. 
+Based on these domain and DBContext classes, **EF Core creates the database and relevant tables**. Out of the box, 
+EF Core uses it's default conventions to create the database and database tables. You can change these default conventions if you want to.
+
+**EF Core Database First Approach**
+
+<p align="center">
+  <img src="https://i.ibb.co/qyGGmKV/ef-core-database-first-approach.png">
+</p>
+
+Sometimes we may have an existing database. When we have a database and the database tables already, we use the database first approach. 
+With the database first approach, EF Core creates the DBContext and Domain classes based on the existing database schema. 
+
+**EF Core Database Providers**
+
+EF Core supports many relational and even non relational databases. EF Core is able to do this by using plug-in libraries called the database providers. 
+These database providers are available as NuGet packages.  
+
+<p align="center">
+  <img src="https://i.ibb.co/Y0gQftW/ef-core-database-providers.png">
+</p>
+
+List of EF Core Database Providers
+> https://docs.microsoft.com/en-us/ef/core/providers/ 
+
+A database provider, usually sits between EF Core and the database it supports. 
+The database provider contains the functionality specific to the database it supports. 
+
+#### [Back to Table of Contents](#table-of-contents)
+
+### Ep 46 - [Install Entity Framework Core](https://www.youtube.com/watch?v=8aHzSx-inDE&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=46)
 
 
 
@@ -2532,32 +2604,7 @@ Transient Service | New Instance | New Instance
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
