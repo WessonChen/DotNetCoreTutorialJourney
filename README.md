@@ -46,6 +46,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 38. [Ep 48 - Using sql server with Entity Framework Core](#ep-48---using-sql-server-with-entity-framework-core)
 39. [Ep 49 - Repository Pattern in Entity Framework Core](#ep-49---repository-pattern-in-entity-framework-core)
 40. [Ep 50 - Entity Framework Core Migrations](#ep-50---entity-framework-core-migrations)
+41. [Ep 51 - Entity Framework Core Seed Data](#ep-51---entity-framework-core-seed-data)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -145,7 +146,7 @@ It looks like this
   }
 }
 ```
-Notice, we have 2 profiles - **IIS Express** and **EmployeeManagement** 
+Notice, we have 2 profiles - **IIS Express** and **DotNetCoreTutorialJourney** 
 
 When we run the project from Visual Studio by pressing **CTRL + F5** or just **F5**, by default, the profile with **"commandName": "IISExpress"** is used. 
 On the other hand, if we run the project using **.NET Core CLI** *(dotnet run)*, the profile with the **"commandName": "Project"** is used. 
@@ -702,7 +703,7 @@ The only responsibility of the view is to present the employee data in an HTML t
 Here is the code in the view. 
 
 ```HTML
-@model EmployeeManagement.Employee
+@model DotNetCoreTutorialJourney.Employee
 
 <html>
 <head>
@@ -1219,7 +1220,7 @@ And then in views, we use `@` to call `Razor` function and `ViewData` keyword to
     <h3>@ViewData["PageTitle"]</h3>
 
     @{
-        var employee = ViewData["Employee"] as EmployeeManagement.Models.Employee;
+        var employee = ViewData["Employee"] as DotNetCoreTutorialJourney.Models.Employee;
     }
 
     <div>
@@ -1344,7 +1345,7 @@ to access the `Employee` object properties like `Name`, `Email` and `Department`
 we are using `@Model.Name`, `@Model.Email` and `@Model.Department` respectively.
 
 ```HTML
-@model EmployeeManagement.Models.Employee
+@model DotNetCoreTutorialJourney.Models.Employee
 
 <html>
 <head>
@@ -2245,7 +2246,7 @@ The options for the department select element can be hard-coded, or they can com
 Place the following `enum` in `Dept.cs` file in the `Models` folder
 
 ```C#
-namespace EmployeeManagement.Models
+namespace DotNetCoreTutorialJourney.Models
 {
     public enum Dept
     {
@@ -2261,7 +2262,7 @@ Update the `Employee` class in `Employee.cs` file in the Models folder
 Department property data type is Dept `enum`.
 
 ```C#
-namespace EmployeeManagement.Models
+namespace DotNetCoreTutorialJourney.Models
 {
     public class Employee
     {
@@ -2976,16 +2977,152 @@ We can confirm this in SQL Server Object Explorer window in Visual Studio.
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 51 - [Entity Framework Core Seed Data](https://www.youtube.com/watch?v=qDUS8ocavBU&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=51)
 
+If you are using Entity Framework Core 2.1 or later there is a new method of seeding database data. In your application DbContext class, 
+override `OnModelCreating()` method. In this example, `HasData()` method configures Employee entity to have the specified seed data. 
 
+```C#
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
 
+    public DbSet<Employee> Employees { get; set; }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Employee>().HasData(
+            new Employee
+            {
+                Id = 1,
+                Name = "Mark",
+                Department = Dept.IT,
+                Email = "mark@gmail.com"
+            }
+        );
+    }
+}
+```
 
+**Using Migrations to seed data**
 
+The following command adds a new migration.
 
+> `Add-Migration SeedMigration`
 
+The above command generates the following code 
 
+using Microsoft.EntityFrameworkCore.Migrations;
 
+```C#
+namespace DotNetCoreTutorialJourney.Migrations
+{
+    public partial class SeedMigration : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.InsertData(
+                table: "Employees",
+                columns: new[] { "Id", "Department", "Email", "Name" },
+                values: new object[] { 1, 3, "mark@gmail.com", "Mark" });
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DeleteData(
+                table: "Employees",
+                keyColumn: "Id",
+                keyValue: 1);
+        }
+    }
+}
+```
+
+Finally, execute `Update-Database` command to apply the above migration to the database. 
+
+**Altering Existing Database Seed data**
+
+You can alter the existing seed data or add new seed data by adding another new migration.  
+
+Step 1 : Modify the code in `OnModelCreating()` method. 
+
+```C#
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Employee>().HasData(
+        new Employee
+        {
+            Id = 1,
+            Name = "Mary",
+            Department = Dept.IT,
+            Email = "mary@gmail.com"
+        },
+        new Employee
+        {
+            Id = 2,
+            Name = "John",
+            Department = Dept.HR,
+            Email = "john@gmail.com"
+        }
+    );
+}
+```
+
+Step 2 : Add a new migration 
+
+> `Add-Migration AlterSeedMigration`
+
+Step 3 : Update the database with the latest migration 
+
+> `Update-Database`
+
+**Keeping DbContext Class Clean**
+
+To keep the DbContext class clean, you may move the seeding code from the `DbContext` class into an extension method on the ModelBuilder class. 
+
+```C#
+using Microsoft.EntityFrameworkCore;
+
+namespace DotNetCoreTutorialJourney.Models
+{
+    public static class ModelBuilderExtensions
+    {
+        public static void Seed(this ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Employee>().HasData(
+                    new Employee
+                    {
+                        Id = 1,
+                        Name = "Mary",
+                        Department = Dept.IT,
+                        Email = "mary@pragimtech.com"
+                    },
+                    new Employee
+                    {
+                        Id = 2,
+                        Name = "John",
+                        Department = Dept.HR,
+                        Email = "john@pragimtech.com"
+                    }
+                );
+        }
+    }
+}
+```
+
+In `OnModelCreating()` method of the `DbContext` class, you can then call `Seed()` method as shown below. 
+
+```C#
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Seed();
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
