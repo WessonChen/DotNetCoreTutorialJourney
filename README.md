@@ -50,6 +50,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 42. [Ep 52 - Keeping Domain Models and Database Schema in Sync](#ep-52---keeping-domain-models-and-database-schema-in-sync)
 43. [Ep 53 - File Upload in .Net Core MVC](#ep-53---file-upload-in-net-core-mvc)
 44. [Ep 55 - Edit View in .Net Core MVC](#ep-55---edit-view-in-net-core-mvc)
+45. [Ep 57 - Handling 404 Not Found in .Net Core MVC](#ep-57---handling-404-not-found-in-net-core-mvc)
+46. [Ep 59 - UseStatusCodePagesWithRedirects vs UseStatusCodePagesWithReExecute](#ep-59---usestatuscodepageswithredirects-vs-usestatuscodepageswithreexecute)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -3546,7 +3548,7 @@ public IActionResult Edit(int id)
         </div>
     </div>
 
-	@*Display the existing employee photo*@
+    @*Display the existing employee photo*@
     <div class="form-group row offset-4">
         <img src="@photoPath" asp-append-version="true" style="width:auto; height:200px" />
     </div>
@@ -3584,34 +3586,34 @@ The following is the Edit action that handles the posted Edit view.
 public IActionResult Edit(EmployeeEditViewModel model)
 {
     // Check if the provided data is valid, if not rerender the edit view
-	// so the user can correct and resubmit the edit form
+    // so the user can correct and resubmit the edit form
     if (ModelState.IsValid)
     {
-	    // Retrieve the employee being edited from the database
+        // Retrieve the employee being edited from the database
         Employee employee = _employeeRepository.GetEmployee(model.Id);
-		// Update the employee object with the data in the model object
+        // Update the employee object with the data in the model object
         employee.Name = model.Name;
         employee.Email = model.Email;
         employee.Department = model.Department;
-		// If the user wants to change the photo, a new photo will be
-		// uploaded and the Photo property on the model object receives
+        // If the user wants to change the photo, a new photo will be
+        // uploaded and the Photo property on the model object receives
         // the uploaded photo. If the Photo property is null, user did
         // not upload a new photo and keeps his existing photo
         if (model.Photo != null)
         {
             // If a new photo is uploaded, the existing photo must be
-			// deleted. So check if there is an existing photo and delete
+            // deleted. So check if there is an existing photo and delete
             if (model.ExistingPhotoPath != null)
             {
                 string filePath = Path.Combine(_hostingEnvironment.WebRootPath, "images", model.ExistingPhotoPath);
                 System.IO.File.Delete(filePath);
             }
-			// Save the new photo in wwwroot/images folder and update
+            // Save the new photo in wwwroot/images folder and update
             // PhotoPath property of the employee object which will be
             // eventually saved in the database
             employee.PhotoPath = ProcessUploadedFile(model);
         }
-		// Call update method on the repository service passing it the
+        // Call update method on the repository service passing it the
         // employee object to update the data in the database table
         _employeeRepository.UpdateEmployee(employee);
         return RedirectToAction("index");
@@ -3643,6 +3645,180 @@ private string ProcessUploadedFile(EmployeeCreateViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 57 - [Handling 404 Not Found in .Net Core MVC](https://www.youtube.com/watch?v=QiF3eJ4Zb0o&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=57)
+
+There are **2 types** of 404 errors. 
+
+**Type 1** : Resource with the specified ID does not exit. This type of 404 errors occur when you cannot find the employee, product, customer etc with the provided ID. 
+
+```C#
+public ViewResult Details(int id)
+{
+    Employee employee = _employeeRepository.GetEmployee(id);
+    if (employee == null)
+    {
+        Response.StatusCode = 404;
+        return View("EmployeeNotFound", id);
+    }
+    return View(employee);
+}
+```
+
+```HTML
+@model int
+
+@{
+    ViewBag.Title = "404 Error";
+}
+
+<div class="alert alert-danger mt-1 mb-1">
+    <h4>404 Not Found Error :</h4>
+    <hr />
+    <h5>
+        Employee with ID = @Model cannot be found
+    </h5>
+</div>
+
+<a asp-controller="home" asp-action="index" class="btn btn-outline-success" 
+   style="width:auto">Click here to see the list of all employees</a>
+```
+
+In this case, we know the user is trying to go to the employee details page, but the provided ID value is invalid. 
+So we are returning a custom error page with the message, the ID cannot be found and a link 
+that he could click to see the list of all employees. 
+
+<p align="center">
+  <img src="https://i.ibb.co/q0tfWvJ/handling-404-not-found-in-asp-net-core-mvc.png">
+</p>
+
+**Type 2** : The URL does not match any route 
+
+Consider the following route. This also results in a 404 error 
+
+> http://localhost/foo/bar
+
+**Default 404 error page in ASP.NET Core**
+
+At the moment we do not have anything configured in this http request processing pipeline to handle 404 errors. 
+So if we navigate to `http://localhost/foo/bar`, we see the following default 404 error page. 
+This is because the URL `/foo/bar` does not match any routes in our application. 
+
+<p align="center">
+  <img src="https://i.ibb.co/XCWL92Z/asp-net-core-404-error-handling.png">
+</p>
+
+**Handling non-success http status codes**
+
+To handle non-success http status codes such as 404 for example, 
+we could use the following 3 built-in asp.net core middleware components. 
+
+- UseStatusCodePages
+- UseStatusCodePagesWithRedirects
+- UseStatusCodePagesWithReExecute 
+
+**UseStatusCodePages Middleware**
+
+This is the least useful of the 3 status code middleware components. For this reason, we rarely use it in a real world production application. 
+To use it in an application and see what it can do, plug it into the http processing pipeline as shown below. 
+
+```C#
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    } else
+    {
+        app.UseStatusCodePages();
+    }
+
+    app.UseStaticFiles();
+    app.UseMvcWithDefaultRoute();
+}
+```
+
+With UseStatusCodePages Middleware configured, if we navigate to `http://localhost/foo/bar`, 
+it returns the following simple text response. 
+
+<p align="center">
+  <img src="https://i.ibb.co/54PYvCs/asp-net-core-usestatuscodepages.png">
+</p>
+
+**UseStatusCodePagesWithRedirects Middleware** 
+
+In a production quality application we want to intercept these non-success http status codes and return a custom error view. 
+To achieve this, we can either use `UseStatusCodePagesWithRedirects` middleware or `UseStatusCodePagesWithReExecute` middleware. 
+
+```C#
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    } else
+    {
+        app.UseStatusCodePagesWithRedirects("/Error/{0}");
+    }
+
+    app.UseStaticFiles();
+    app.UseMvcWithDefaultRoute();
+}
+```
+
+If there is a 404 error, the user is redirected to /Error/404. The placeholder {0}, in "/Error/{0}" 
+will automatically receive the http status code. 
+
+**ErrorController.cs**
+
+```C#
+namespace DotNetCoreTutorialJourney.Controllers
+{
+    public class ErrorController : Controller
+    {
+        // If there is 404 status code, the route path will become Error/404
+        [Route("Error/{statusCode}")]
+        public IActionResult HttpStatusCodeHandler(int statusCode)
+        {
+            switch (statusCode)
+            {
+                case 404:
+                    ViewBag.ErrorMessage = "Sorry, the resource you requested could not be found";
+                    break;
+            }
+
+            return View("NotFound");
+        }
+    }
+}
+```
+
+**NotFound View**
+
+```HTML
+@{
+    ViewBag.Title = "Not Found";
+}
+
+<h1>@ViewBag.ErrorMessage</h1>
+
+<a asp-action="index" asp-controller="home">
+    Click here to navigate to the home page
+</a>
+```
+
+At this point, if we navigate to `http://localhost/foo/bar` we see the following custom 404 error view NotFound.cshtml as expected. 
+
+<p align="center">
+  <img src="https://i.ibb.co/Z6FJGHM/asp-net-core-usestatuscodepageswithredirects.png">
+</p>
+
+To use `UseStatusCodePagesWithReExecute` middleware instead of `UseStatusCodePagesWithRedirects` middleware 
+
+REPLACE `app.UseStatusCodePagesWithRedirects("/Error/{0}");` WITH `app.UseStatusCodePagesWithReExecute("/Error/{0}");`
+
+#### [Back to Table of Contents](#table-of-contents)
+
+### Ep 59 - [UseStatusCodePagesWithRedirects vs UseStatusCodePagesWithReExecute](https://www.youtube.com/watch?v=9CwgiSxrkeQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=59)
 
 
 
@@ -3655,45 +3831,7 @@ private string ProcessUploadedFile(EmployeeCreateViewModel model)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

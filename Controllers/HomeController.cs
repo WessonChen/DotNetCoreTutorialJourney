@@ -24,9 +24,14 @@ namespace DotNetCoreTutorialJourney.Controllers
             return View(_employeeRepository.GetAllEmployee());
         }
 
-        public ViewResult Details(int? id)
+        public ViewResult Details(int id)
         {
-            Employee employee = _employeeRepository.GetEmployee(id ?? 1);
+            Employee employee = _employeeRepository.GetEmployee(id);
+            if (employee == null)
+            {
+                Response.StatusCode = 404;
+                return View("EmployeeNotFound", id);
+            }
             return View(employee);
         }
 
@@ -41,7 +46,7 @@ namespace DotNetCoreTutorialJourney.Controllers
         {
             if (ModelState.IsValid)
             {
-                string uniqueFileName = ProcessUploadedFile(model);
+                string uniqueFileName = GetUploadedFileName(model);
 
                 Employee employee = new Employee {
                     Name = model.Name,
@@ -91,7 +96,7 @@ namespace DotNetCoreTutorialJourney.Controllers
                         string filePath = Path.Combine(_hostingEnvironment.WebRootPath, "images", model.ExistingPhotoPath);
                         System.IO.File.Delete(filePath);
                     }
-                    employee.PhotoPath = ProcessUploadedFile(model);
+                    employee.PhotoPath = GetUploadedFileName(model);
                 }
                 _employeeRepository.UpdateEmployee(employee);
                 return RedirectToAction("index");
@@ -99,7 +104,7 @@ namespace DotNetCoreTutorialJourney.Controllers
             return View();
         }
 
-        private string ProcessUploadedFile(EmployeeCreateViewModel model)
+        private string GetUploadedFileName(EmployeeCreateViewModel model)
         {
             string uniqueFileName = null;
             if (model.Photo != null)
