@@ -2942,15 +2942,39 @@ public void ConfigureServices(IServiceCollection services)
 
 ### Ep 50 - [Entity Framework Core Migrations](https://www.youtube.com/watch?v=G14lmWS-h4k&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=50)
 
+**What is a migration in entity framework core**
 
+Migration is an entity framework core feature that keeps the database schema and our application model classes (also called entity class) in sync
 
+To work with migrations, we can either use the Package Manager Console (PMC) or the .NET core command-line interface (CLI).
 
+**Common entity framework core migration commands**
 
+We will be using the following 3 common commands to work with migrations in entity framework core. 
 
+**Command** | **Purpose**
+:---: | :---:
+get-help about_entityframeworkcore | Provides entity framework core help
+Add-Migration | Adds a new migration
+Update-Database | Updates the database to a specified migration
 
+**Creating a Migration in Entity Framework Core**
 
+The following command creates the initial migration.
+> `Add-Migration {name}`
 
+When the above command completes, you will see a file in the "Migrations" folder that contains the name `{name}.cs`. 
+This file has the code required to create the respective database tables.
 
+**Update-Database in Entity Framework Core**
+
+We need to execute the migration code to create the tables. If the database does not exist already, it creates the database and then the database tables. 
+For updating the database, we use Update-Database command. To the Update-Database command we may pass the migration name we want to execute. 
+If no migration is specified, the command by default executes the last migration.
+
+We can confirm this in SQL Server Object Explorer window in Visual Studio. 
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
