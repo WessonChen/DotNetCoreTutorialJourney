@@ -3273,8 +3273,7 @@ The code specific to uploading the file is commented
     </div>
 
 	@*  asp-for tag helper is set to "Photo" property. "Photo" property type is IFormFile
-        so at runtime asp.net core generates file upload control (input type=file)
-    *@
+        so at runtime asp.net core generates file upload control (input type=file) *@
 
     <div class="form-group row">
         <label asp-for="Photo" class="col-sm-2 col-form-label"></label>
@@ -3331,7 +3330,7 @@ public IActionResult Create(EmployeeCreateViewModel model)
         string uniqueFileName = null;
         if (model.Photo != null)
         {
-		    // The image must be uploaded to the images folder in wwwroot
+			// The image must be uploaded to the images folder in wwwroot
             // To get the path of the wwwroot folder we are using the inject
             // HostingEnvironment service provided by ASP.NET Core
             string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
@@ -3436,6 +3435,7 @@ It contains code to display a specific employee details using the details view a
 }
 ```
 
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
