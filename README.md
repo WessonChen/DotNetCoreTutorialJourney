@@ -48,6 +48,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 40. [Ep 50 - Entity Framework Core Migrations](#ep-50---entity-framework-core-migrations)
 41. [Ep 51 - Entity Framework Core Seed Data](#ep-51---entity-framework-core-seed-data)
 42. [Ep 52 - Keeping Domain Models and Database Schema in Sync](#ep-52---keeping-domain-models-and-database-schema-in-sync)
+43. [Ep 53 - File Upload in .Net Core MVC](#ep-53---file-upload-in-net-core-mvc)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -3198,13 +3199,242 @@ Since we want to remove both Migration_Three and Migration_Two code files, we wa
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 53 - [File Upload in .Net Core MVC](https://www.youtube.com/watch?v=aoxEJii70_I&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=53)
+
+First, because our `Employee` class has photoPath as a string, and we take **file** from the form, we need a new model.
+Let us create `EmployeeCreateViewModel` Class 
+
+```C#
+public class EmployeeCreateViewModel
+{
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public Dept? Department { get; set; }
+    public IFormFile Photo { get; set; }
+}
+```
+
+- `IFormFile` is in `Microsoft.AspNetCore.Http` namespace.
+- The file uploaded to the server can be accessed through Model Binding using the `IFormFile` interface.
+- The interface `IFormFile` has the following properties and methods
+
+```C#
+public interface IFormFile
+{
+    string ContentType { get; }
+    string ContentDisposition { get; }
+    IHeaderDictionary Headers { get; }
+    long Length { get; }
+    string Name { get; }
+    string FileName { get; }
+    Stream OpenReadStream();
+    void CopyTo(Stream target);
+    Task CopyToAsync(Stream target, CancellationToken cancellationToken = null);
+}
+```
+
+**Create View Code**
+
+The code specific to uploading the file is commented 
+
+```HTML
+@model EmployeeCreateViewModel
+
+@{
+    ViewBag.Title = "Create Employee";
+}
+
+@*To support file upload set the form element enctype="multipart/form-data" *@
+
+<form enctype="multipart/form-data" asp-controller="Home" asp-action="Create" method="post" class="mt-3" autocomplete="off">
+    <div class="form-group row">
+        <label asp-for="Name" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Name" class="form-control" placeholder="Name">
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="Email" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Email" class="form-control" placeholder="Email">
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="Department" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <select asp-for="Department" class="custom-select mr-sm-2"
+                    asp-items="Html.GetEnumSelectList<Dept>()">
+                <option value="">Please Select</option>
+            </select>
+            <span asp-validation-for="Department" class="text-danger"></span>
+        </div>
+    </div>
+
+	@*  asp-for tag helper is set to "Photo" property. "Photo" property type is IFormFile
+        so at runtime asp.net core generates file upload control (input type=file)
+    *@
+
+    <div class="form-group row">
+        <label asp-for="Photo" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <div class="custom-file">
+                <input asp-for="Photo" class="form-control custom-file-input">
+                <label class="custom-file-label">Choose File...</label>
+            </div>
+        </div>
+    </div>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group row">
+        <div class="col-sm-10">
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+    </div>
+
+	@*This script is required to display the selected file in the file upload element*@
+
+    @section Scripts {
+        <script>
+            $(document).ready(function () {
+                $('.custom-file-input').on("change", function () {
+                    var fileName = $(this).val().split("\\").pop();
+                    $(this).next('.custom-file-label').html(fileName);
+                });
+            });
+        </script>
+    }
+</form>
+```
+
+**Create Action Method**
 
 
+```C#
+private readonly IEmployeeRepository _employeeRepository;
+private readonly IHostingEnvironment _hostingEnvironment;
 
+public HomeController(IEmployeeRepository employeeRepository, 
+                        IHostingEnvironment hostingEnvironment)
+{
+    _employeeRepository = employeeRepository;
+    _hostingEnvironment = hostingEnvironment;
+}
 
+[HttpPost]
+public IActionResult Create(EmployeeCreateViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        string uniqueFileName = null;
+        if (model.Photo != null)
+        {
+		    // The image must be uploaded to the images folder in wwwroot
+            // To get the path of the wwwroot folder we are using the inject
+            // HostingEnvironment service provided by ASP.NET Core
+            string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
+			// To make sure the file name is unique we are appending a new
+            // GUID value and and an underscore to the file name
+            uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(model.Photo.FileName);
+            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            model.Photo.CopyTo(new FileStream(filePath, FileMode.Create));
+        }
 
+        Employee employee = new Employee {
+            Name = model.Name,
+            Email = model.Email,
+            Department = model.Department,
+            PhotoPath = uniqueFileName
+        };
 
+        _employeeRepository.AddEmployee(employee);
+        return RedirectToAction("details", new { id = employee.Id });
+    }
+    return View();
+}
+```
 
+The rest of the code on this page is not required to upload a file. 
+It contains code to display a specific employee details using the details view and the list of employees using the index view. 
+
+**Details View Code**
+
+```HTML
+@model Employee
+
+@{
+    ViewBag.Title = "Employee Details";
+    var photoPath = "~/images/" + (Model.PhotoPath ?? "avatar_placeholder.png");
+}
+
+<div class="row justify-content-center m-3">
+    <div class="col-sm-8">
+        <div class="card">
+            <div class="card-header">
+                <h1>@Model.Name</h1>
+            </div>
+
+            <div class="card-body text-center">
+                <img class="card-img-top" src="@photoPath" asp-append-version="true" />
+
+                <h4>Employee ID : @Model.Id</h4>
+                <h4>Email : @Model.Email</h4>
+                <h4>Department : @Model.Department</h4>
+            </div>
+            <div class="card-footer text-center">
+                <a asp-controller="home" asp-action="index" class="btn btn-primary m-1">Back</a>
+                <a href="#" class="btn btn-primary m-1">Edit</a>
+                <a href="#" class="btn btn-danger m-1">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+**Index View Code**
+
+```HTML
+@model IEnumerable<Employee>
+
+@{
+    ViewBag.Title = "Employee List";
+}
+
+<div class="card-deck">
+    @foreach (var employee in Model)
+    {
+        var photoPath = "~/images/" + (employee.PhotoPath ?? "avatar_placeholder.png");
+
+        <div class="card m-3 card-3-columns">
+            <div class="card-header">
+                <h3>@employee.Name</h3>
+            </div>
+            <img class="card-img-top imageThumbnail" src="@photoPath" asp-append-version="true" />
+            <div class="card-footer text-center">
+                <a asp-controller="home" asp-action="details" asp-route-id="@employee.Id" class="btn btn-primary m-1">View</a>
+                <a href="#" class="btn btn-primary m-1">Edit</a>
+                <a href="#" class="btn btn-danger m-1">Delete</a>
+            </div>
+        </div>
+    }
+</div>
+```
+
+**main.css**
+
+```CSS
+.imageThumbnail {
+    height: 200px;
+    width: auto;
+}
+
+.card-3-columns {
+    min-width: 18rem;
+    max-width: 30.5%;
+}
+```
 
 
 
