@@ -33,13 +33,15 @@ namespace DotNetCoreTutorialJourney.Migrations
                         .IsRequired()
                         .HasMaxLength(50);
 
+                    b.Property<string>("PhotoPath");
+
                     b.HasKey("Id");
 
                     b.ToTable("Employees");
 
                     b.HasData(
-                        new { Id = 1, Department = 2, Email = "mary@gmail.com", Name = "Mary" },
-                        new { Id = 2, Department = 1, Email = "john@gmail.com", Name = "John" }
+                        new { Id = 1, Department = 2, Email = "mary@pragimtech.com", Name = "Mary" },
+                        new { Id = 2, Department = 1, Email = "john@pragimtech.com", Name = "John" }
                     );
                 });
 #pragma warning restore 612, 618

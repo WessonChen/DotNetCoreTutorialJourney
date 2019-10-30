@@ -47,6 +47,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 39. [Ep 49 - Repository Pattern in Entity Framework Core](#ep-49---repository-pattern-in-entity-framework-core)
 40. [Ep 50 - Entity Framework Core Migrations](#ep-50---entity-framework-core-migrations)
 41. [Ep 51 - Entity Framework Core Seed Data](#ep-51---entity-framework-core-seed-data)
+42. [Ep 52 - Keeping Domain Models and Database Schema in Sync](#ep-52---keeping-domain-models-and-database-schema-in-sync)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -3093,21 +3094,21 @@ namespace DotNetCoreTutorialJourney.Models
         public static void Seed(this ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Employee>().HasData(
-                    new Employee
-                    {
-                        Id = 1,
-                        Name = "Mary",
-                        Department = Dept.IT,
-                        Email = "mary@pragimtech.com"
-                    },
-                    new Employee
-                    {
-                        Id = 2,
-                        Name = "John",
-                        Department = Dept.HR,
-                        Email = "john@pragimtech.com"
-                    }
-                );
+                new Employee
+                {
+                    Id = 1,
+                    Name = "Mary",
+                    Department = Dept.IT,
+                    Email = "mary@pragimtech.com"
+                },
+                new Employee
+                {
+                    Id = 2,
+                    Name = "John",
+                    Department = Dept.HR,
+                    Email = "john@pragimtech.com"
+                }
+            );
         }
     }
 }
@@ -3124,22 +3125,78 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 52 - [Keeping Domain Models and Database Schema in Sync](https://www.youtube.com/watch?v=MhvOKHUWgiY&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=52)
 
+As we develop our application and add new features, our application domain classes change. When the domain classes change, 
+the corresponding changes have to be made to the underlying database schema. 
+Otherwise the database schema goes out of sync and the application does not work as expected.  
 
+However, it is important not to manually make these changes to the database schema. 
+We use migrations to keep the database schema in sync as the application domain classes change.
 
+**For Example**
 
+At the moment our domain Employee class does not have a property to store the Photo Path of the employee. 
 
+To be able to store the Photo Path of the employee, we want to add `PhotoPath` property to the `Employee` class. 
 
+```C#
+public class Employee
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public Dept? Department { get; set; }
+    public string PhotoPath { get; set; }
+}
+```
 
+To keep the Employees database table in sync with the Employee Model class, add a new migration and execute it to update the database.  
 
+```
+Add-Migration AddPhotoPathToEmployees
+Update-Database
+```
 
+**Use of __EFMigrationsHistory table**
 
+`__EFMigrationsHistory` table is created in the database, when the first migration is executed. 
+This table is used to keep track of the migrations that are applied to the database. 
+There will be an entry for every migration that is applied. 
 
+**Removing a migration**
 
+To remove a migration execute `Remove-Migration` command 
 
+It only removes **one migration** at a time and that too **only the latest migration** that is **not yet applied** to the database. 
+If all the migrations are already applied, executing Remove-Migration command throws the following exception. 
 
+> The migration 'Latest_Migration_Name' has already been applied to the database. Revert it and try again. 
 
+**Removing a migration that is already applied to the database**
 
+Let us say we have the following 3 migrations already applied to the database. 
+1. Migration_One
+2. Migration_Two
+3. Migration_Three
+
+We want to remove both migration Migration_Two and Migration_Three. Since all these 3 migrations are already applied to the database, 
+executing Remove-Migration command will throw an error. 
+
+If we relate this to our example, we want to undo the changes done by Migration_Two and Migration_Three and bring the database state to the state it was in, 
+when Migration_One was executed. To achieve this we execute Update-Database command with Migration_One name as shown below. 
+
+```
+Update-Database Migration_One
+```
+
+Executing the above command will undo the changes made by Migration_Two and Migration_Three. 
+EF core will also remove the entries for these 2 migrations from __EFMigrationsHistory table. 
+
+However, the migration code files will still be there in the Migrations folder. To remove the code files use Remove-Migration command. 
+Since we want to remove both Migration_Three and Migration_Two code files, we want to execute `Remove-Migration` command **twice**. 
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
