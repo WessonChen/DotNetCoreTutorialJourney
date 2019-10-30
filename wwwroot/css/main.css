@@ -3,8 +3,7 @@
 }
 
 .imageThumbnail {
-    height: 200px;
-    width: auto;
+    width: 100%;
 }
 
 .card-3-columns {

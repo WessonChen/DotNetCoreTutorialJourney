@@ -49,6 +49,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 41. [Ep 51 - Entity Framework Core Seed Data](#ep-51---entity-framework-core-seed-data)
 42. [Ep 52 - Keeping Domain Models and Database Schema in Sync](#ep-52---keeping-domain-models-and-database-schema-in-sync)
 43. [Ep 53 - File Upload in .Net Core MVC](#ep-53---file-upload-in-net-core-mvc)
+44. [Ep 55 - Edit View in .Net Core MVC](#ep-55---edit-view-in-net-core-mvc)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -3272,8 +3273,8 @@ The code specific to uploading the file is commented
         </div>
     </div>
 
-	@*  asp-for tag helper is set to "Photo" property. "Photo" property type is IFormFile
-        so at runtime asp.net core generates file upload control (input type=file) *@
+    @*  asp-for tag helper is set to "Photo" property. "Photo" property type is IFormFile
+        so at runtime asp.net core generates file upload control (input type=file)  *@
 
     <div class="form-group row">
         <label asp-for="Photo" class="col-sm-2 col-form-label"></label>
@@ -3293,7 +3294,7 @@ The code specific to uploading the file is commented
         </div>
     </div>
 
-	@*This script is required to display the selected file in the file upload element*@
+    @*This script is required to display the selected file in the file upload element*@
 
     @section Scripts {
         <script>
@@ -3330,11 +3331,11 @@ public IActionResult Create(EmployeeCreateViewModel model)
         string uniqueFileName = null;
         if (model.Photo != null)
         {
-			// The image must be uploaded to the images folder in wwwroot
+            // The image must be uploaded to the images folder in wwwroot
             // To get the path of the wwwroot folder we are using the inject
             // HostingEnvironment service provided by ASP.NET Core
             string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
-			// To make sure the file name is unique we are appending a new
+            // To make sure the file name is unique we are appending a new
             // GUID value and and an underscore to the file name
             uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(model.Photo.FileName);
             string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -3425,7 +3426,6 @@ It contains code to display a specific employee details using the details view a
 
 ```CSS
 .imageThumbnail {
-    height: 200px;
     width: auto;
 }
 
@@ -3435,27 +3435,213 @@ It contains code to display a specific employee details using the details view a
 }
 ```
 
+If we want to add **Multiple files**, we can use `multiple` attribute
+
+```HTML
+<input asp-for="Photos" multiple class="form-control custom-file-input">
+```
+
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 55 - [Edit View in .Net Core MVC](https://www.youtube.com/watch?v=lhiIvx7jMaY&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=55)
 
+When the Edit button is clicked we want to redirect to the Edit view. In index.chtml modify the Edit anchor element as shown below. 
 
+```HTML
+<a asp-controller="home" asp-action="edit" asp-route-id="@employee.Id"
+    class="btn btn-primary m-1">Edit</a>
+```
 
+**Edit View Model**
 
+In the ViewModels folder include the following `EmployeeEditViewModel` class 
 
+```C#
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class EmployeeEditViewModel : EmployeeCreateViewModel
+    {
+        public string ExistingPhotoPath { get; set; }
+    }
+}
+```
 
+- This view model carries the data the Edit view needs
+- We used the inheritance approach in order not to duplicate code
 
+**Edit Action Method in the Home Controller**
 
+```C#
+[HttpGet]
+public IActionResult Edit(int id)
+{
+    Employee employee = _employeeRepository.GetEmployee(id);
+    if (employee != null)
+    {
+        EmployeeEditViewModel employeeEditViewModel = new EmployeeEditViewModel
+        {
+            Id = employee.Id,
+            Name = employee.Name,
+            Email = employee.Email,
+            Department = employee.Department,
+            ExistingPhotoPath = employee.PhotoPath
+        };
+        return View(employeeEditViewModel);
+    }
+    return RedirectToAction("index");
+}
+```
 
+**Edit View**
 
+```HTML
+@model EmployeeEditViewModel
 
+@{
+    ViewBag.Title = "Update Employee";
+    // Get the full path of the existing employee photo for display
+    var photoPath = "~/images/" + (Model.ExistingPhotoPath ?? "avatar_placeholder.png");
+}
 
+<form enctype="multipart/form-data" asp-controller="Home" asp-action="edit" method="post" class="mt-3" autocomplete="off">
 
+    @*Use hidden input elements to store employee id and ExistingPhotoPath 
+	which we need when we submit the form and update data in the database*@
+    <input hidden asp-for="Id" />
+    <input hidden asp-for="ExistingPhotoPath" />
 
+    @*Bind to the properties of the EmployeeEditViewModel. The asp-for tag helper 
+	takes care of displaying the existing data in the respective input elements*@
+    <div class="form-group row">
+        <label asp-for="Name" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Name" class="form-control" placeholder="Name">
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="Email" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Email" class="form-control" placeholder="Email">
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="Department" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <select asp-for="Department" class="custom-select mr-sm-2"
+                    asp-items="Html.GetEnumSelectList<Dept>()">
+                <option value="">Please Select</option>
+            </select>
+            <span asp-validation-for="Department" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="Photo" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <div class="custom-file">
+                <input asp-for="Photo" class="form-control custom-file-input">
+                <label class="custom-file-label">Click to Change Photo...</label>
+            </div>
+        </div>
+    </div>
 
+	@*Display the existing employee photo*@
+    <div class="form-group row offset-4">
+        <img src="@photoPath" asp-append-version="true" style="width:auto; height:200px" />
+    </div>
 
+    <div asp-validation-summary="All" class="text-danger"></div>
 
+    <div class="form-group row">
+        <div class="col-sm-10">
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a asp-action="index" asp-controller="home" class="btn btn-primary">Cancel</a>
+        </div>
+    </div>
 
+    @section Scripts {
+        <script>
+            $(document).ready(function () {
+                $('.custom-file-input').on("change", function () {
+                    var fileName = $(this).val().split("\\").pop();
+                    $(this).next('.custom-file-label').html(fileName);
+                });
+            });
+        </script>
+    }
+</form>
+```
 
+**HttpPost Edit Action**
+
+The following is the Edit action that handles the posted Edit view.
+
+```C#
+// Through model binding, the action method parameter
+// EmployeeEditViewModel receives the posted edit form data
+[HttpPost]
+public IActionResult Edit(EmployeeEditViewModel model)
+{
+    // Check if the provided data is valid, if not rerender the edit view
+	// so the user can correct and resubmit the edit form
+    if (ModelState.IsValid)
+    {
+	    // Retrieve the employee being edited from the database
+        Employee employee = _employeeRepository.GetEmployee(model.Id);
+		// Update the employee object with the data in the model object
+        employee.Name = model.Name;
+        employee.Email = model.Email;
+        employee.Department = model.Department;
+		// If the user wants to change the photo, a new photo will be
+		// uploaded and the Photo property on the model object receives
+        // the uploaded photo. If the Photo property is null, user did
+        // not upload a new photo and keeps his existing photo
+        if (model.Photo != null)
+        {
+            // If a new photo is uploaded, the existing photo must be
+			// deleted. So check if there is an existing photo and delete
+            if (model.ExistingPhotoPath != null)
+            {
+                string filePath = Path.Combine(_hostingEnvironment.WebRootPath, "images", model.ExistingPhotoPath);
+                System.IO.File.Delete(filePath);
+            }
+			// Save the new photo in wwwroot/images folder and update
+            // PhotoPath property of the employee object which will be
+            // eventually saved in the database
+            employee.PhotoPath = ProcessUploadedFile(model);
+        }
+		// Call update method on the repository service passing it the
+        // employee object to update the data in the database table
+        _employeeRepository.UpdateEmployee(employee);
+        return RedirectToAction("index");
+    }
+    return View();
+}
+```
+
+The following is the private `ProcessUploadedFile()` method which saves the photo in wwwroot/images folder and returns the unique file name. 
+This file name is then assigned as the value for the PhotoPath on the employee object which will eventually be saved in the database. 
+
+```C#
+private string ProcessUploadedFile(EmployeeCreateViewModel model)
+{
+    string uniqueFileName = null;
+    if (model.Photo != null)
+    {
+        string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images");
+        uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(model.Photo.FileName);
+        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            model.Photo.CopyTo(fileStream);
+        }
+    }
+    return uniqueFileName;
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
