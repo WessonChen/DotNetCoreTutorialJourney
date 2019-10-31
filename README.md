@@ -4206,27 +4206,102 @@ In a real world application we usually log the exceptions and warnings to a data
 
 ### Ep 63 - [Logging to File in .Net Core MVC Using Nlog](https://www.youtube.com/watch?v=o5u4fE0t79k&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=63)
 
+**Step 1** : Install NLog.Web.AspNetCore nuget package 
 
+**Step 2** : Create nlog.config file 
 
+Create `nlog.config` file in the root of your project using text format.
 
+```XML
+<?xml version="1.0" encoding="utf-8" ?>
+<nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
+  <!-- the targets to write to -->
+  <targets>
+    <!-- write logs to file  -->
+    <target name="allfile" xsi:type="File"
+            fileName="c:\Temp\nlog-all-${shortdate}.log"/>
+  </targets>
 
+  <!-- rules to map from logger name to target -->
+  <rules>
+    <!--All logs, including from Microsoft-->
+    <logger name="*" minlevel="Trace" writeTo="allfile" />
+  </rules>
+</nlog>
+```
 
+To learn more about the nlog.config file please refer to the [github wiki page](https://github.com/NLog/NLog/wiki/Configuration-file)
 
+**Step 3** : Enable copy to bin folder 
 
+Right click on `nlog.config` file in the Solution Explorer and select `Properties`. In the `Properties` window set  
+> Copy to Output Directory = Copy if newer
 
+**Step 4** : Enable NLog as one of the Logging Provider 
 
+In addition to using the default logging providers (i.e Console, Debug & EventSource), 
+we also added NLog using the extension method `AddNLog()`. This method is in `NLog.Extensions.Logging` namespace.
 
+```C#
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 
+namespace DotNetCoreTutorialJourney
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            CreateWebHostBuilder(args).Build().Run();
+        }
 
+        //CreateDefaultBuilder creates the 'WebHost' with certain pre-configure defaults.
+        //UseStartup extension starts up the 'Startup' class by default.
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args).ConfigureLogging((hostingContext, logging) =>
+            {
+                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                logging.AddConsole();
+                logging.AddDebug();
+                logging.AddEventSourceLogger();
+                // Enable NLog as one of the Logging Provider
+                logging.AddNLog();
+            }).UseStartup<Startup>();
+    }
+}
+```
 
+If you want only NLog as the logging provider, clear all the logging providers and then add NLog. 
 
+```C#
+namespace DotNetCoreTutorialJourney
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            CreateWebHostBuilder(args).Build().Run();
+        }
 
+        //CreateDefaultBuilder creates the 'WebHost' with certain pre-configure defaults.
+        //UseStartup extension starts up the 'Startup' class by default.
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args).ConfigureLogging((hostingContext, logging) =>
+            {
+                //Remove all default logging provider
+                logging.ClearProviders();
 
-
-
-
-
+                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                // Enable NLog as one of the Logging Provider
+                logging.AddNLog();
+            }).UseStartup<Startup>();
+    }
+}
+```
 
 #### [Back to Table of Contents](#table-of-contents)
 
