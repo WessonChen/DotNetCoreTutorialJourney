@@ -26,13 +26,15 @@ namespace DotNetCoreTutorialJourney.Controllers
 
         public ViewResult Details(int id)
         {
-            Employee employee = _employeeRepository.GetEmployee(id);
-            if (employee == null)
-            {
-                Response.StatusCode = 404;
-                return View("EmployeeNotFound", id);
-            }
-            return View(employee);
+            throw new Exception("Error in Details View");
+
+            //Employee employee = _employeeRepository.GetEmployee(id);
+            //if (employee == null)
+            //{
+            //    Response.StatusCode = 404;
+            //    return View("EmployeeNotFound", id);
+            //}
+            //return View(employee);
         }
 
         [HttpGet]
@@ -62,7 +64,7 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public ViewResult Edit(int id)
         {
             Employee employee = _employeeRepository.GetEmployee(id);
             if (employee != null)
@@ -77,7 +79,7 @@ namespace DotNetCoreTutorialJourney.Controllers
                 };
                 return View(employeeEditViewModel);
             }
-            return RedirectToAction("index");
+            return View("EmployeeNotFound", id);
         }
 
         [HttpPost]

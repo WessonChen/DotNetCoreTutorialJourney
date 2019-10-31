@@ -52,6 +52,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 44. [Ep 55 - Edit View in .Net Core MVC](#ep-55---edit-view-in-net-core-mvc)
 45. [Ep 57 - Handling 404 Not Found in .Net Core MVC](#ep-57---handling-404-not-found-in-net-core-mvc)
 46. [Ep 59 - UseStatusCodePagesWithRedirects vs UseStatusCodePagesWithReExecute](#ep-59---usestatuscodepageswithredirects-vs-usestatuscodepageswithreexecute)
+47. [Ep 60 - Global Exception Handling in .Net Core MVC](#ep-60---global-exception-handling-in-net-core-mvc)
+
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -3852,7 +3854,7 @@ when actually an error occurred which **isn't semantically correct**.
 - `app.UseStatusCodePagesWithReExecute("/Error/{0}")`
 - When a request is issued to `http://localhost/foo/bar`
 - `404 status code` is raised 
-- `UseStatusCodePagesWithReExecute` middleware **intercepts** the **404 status code* and **re-executes** the pipeline pointing it to the URL (**/Error/404**)
+- `UseStatusCodePagesWithReExecute` middleware **intercepts** the **404 status code** and **re-executes** the pipeline pointing it to the URL (**/Error/404**)
 - The request flows through the pipeline and handled by the MVC middleware which returns `NotFound` view HTML along with status code **200**
 - As the response flows out to the client, it passes through `UseStatusCodePagesWithReExecute` middleware which uses the HTML response 
 but **replaces the 200 status code with the original 404 status code**.
@@ -3916,16 +3918,90 @@ You can then display it in the custom error view as shown below
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 60 - [Global Exception Handling in .Net Core MVC](https://www.youtube.com/watch?v=jeBttUIqpuc&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=60)
 
+**Throwing an Exception in ASP.NET Core**
 
+Consider the following Details action method in `HomeController`. We are deliberately throwing an exception using the throw keyword. 
 
+```C#
+public ViewResult Details(int? id)
+{
+    throw new Exception("Error in Details View");
 
+    // Rest of the code
+}
+```
 
+**Step 1** : For a non-development environment, add the Exception Handling Middleware to the request processing pipeline using `UseExceptionHandler()` method. 
+We do this in the `Configure()` method of the `Startup` class. Exception Handling Middleware looks for `ErrorController`. 
 
+```C#
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
+    else
+    {
+        app.UseExceptionHandler("/Error");
+    }
 
+    // Rest of the code
+}
+```
 
+**Step 2** : Implement the `ErrorController` that retrieves the exception details and returns the custom Error view. 
+In a production application, we **do not display** the exception details on the error view. We instead log them to a database table, file, event viewer etc, 
+so a developer can review them and provide a code fix if required.
 
+```C#
+public class ErrorController : Controller
+{
+    [AllowAnonymous]
+    [Route("Error")]
+    public IActionResult Error()
+    {
+        // Retrieve the exception Details
+        var exceptionHandlerPathFeature =
+                HttpContext.Features.Get<IExceptionHandlerPathFeature>();
 
+        ViewBag.ExceptionPath = exceptionHandlerPathFeature.Path;
+        ViewBag.ExceptionMessage = exceptionHandlerPathFeature.Error.Message;
+        ViewBag.StackTrace = exceptionHandlerPathFeature.Error.StackTrace;
+
+        return View("Error");
+    }
+}
+```
+
+**Step 3** : Implement Error View 
+
+```HTML
+<h3>An occured while processing your request. The support team is notified and we are working on the fix</h3>
+<hr />
+<h3>Exception Details:</h3>
+<div class="alert alert-danger">
+    <h5>Exception Path</h5>
+    <hr />
+    <p>@ViewBag.ExceptionPath</p>
+</div>
+
+<div class="alert alert-danger">
+    <h5>Exception Message</h5>
+    <hr />
+    <p>@ViewBag.ExceptionMessage</p>
+</div>
+
+<div class="alert alert-danger">
+    <h5>Exception Stack Trace</h5>
+    <hr />
+    <p>@ViewBag.StackTrace</p>
+</div>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
