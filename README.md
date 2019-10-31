@@ -3809,7 +3809,7 @@ namespace DotNetCoreTutorialJourney.Controllers
 At this point, if we navigate to `http://localhost/foo/bar` we see the following custom 404 error view NotFound.cshtml as expected. 
 
 <p align="center">
-  <img src="https://i.ibb.co/Z6FJGHM/asp-net-core-usestatuscodepageswithredirects.png">
+  <img src="https://i.ibb.co/NVwrJ8x/asp-net-core-usestatuscodepageswithredirects.png">
 </p>
 
 To use `UseStatusCodePagesWithReExecute` middleware instead of `UseStatusCodePagesWithRedirects` middleware 
@@ -3820,16 +3820,99 @@ REPLACE `app.UseStatusCodePagesWithRedirects("/Error/{0}");` WITH `app.UseStatus
 
 ### Ep 59 - [UseStatusCodePagesWithRedirects vs UseStatusCodePagesWithReExecute](https://www.youtube.com/watch?v=9CwgiSxrkeQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=59)
 
+Irrespective of the middleware component you use, from an end user standpoint, 
+there is no difference in the behaviour. We see the specified custom error view in both the cases. 
 
+**UseStatusCodePagesWithRedirects**
 
+`app.UseStatusCodePagesWithRedirects("/Error/{0}");` When a request is issued to `http://localhost/foo/bar`. 
+Since this URL does not match with any route in our application status code 404 is raised,
+`UseStatusCodePagesWithRedirects` middleware component **intercepts** the 404 status code and as the name implies, 
+issues a redirect to the provided error path (in our case "/Error/404")
 
+**Request processing with UseStatusCodePagesWithRedirects**
 
+- When a request is issued to http://localhost/foo/bar
+- **404 status code** is raised 
+- `StatusCodePagesWithRedirects` middleware **intercepts** this and changes it to **302**, pointing it to the error path (**/Error/404**)
+- **302 status code** means the URL of the requested resource has been changed temporarily, in our case it changed to **/Error/404**
+- So another `GET` request is issued to serve the redirected request
+- Because a redirect is issued, notice the URL in the address bar also changes **from /foo/bar to /Error/404**
+- The request flows through the pipeline and handled by the MVC middleware which ultimately returns NotFound view HTML 
+with **status code 200**(which means the request completed successfully)
+- As far as the browser is concerned in this entire request flow there was **no 404 error**.
+- If you closely observe this request and response flow, we are returning a success status code (**200**) 
+when actually an error occurred which **isn't semantically correct**.
 
+<p align="center">
+  <img src="https://i.ibb.co/zNCs6Y8/Use-Status-Code-Pages-With-Redirects-vs-Use-Status-Code-Pages-With-Re-Execute.png">
+</p>
 
+**Request processing with UseStatusCodePagesWithReExecute**
+- `app.UseStatusCodePagesWithReExecute("/Error/{0}")`
+- When a request is issued to `http://localhost/foo/bar`
+- `404 status code` is raised 
+- `UseStatusCodePagesWithReExecute` middleware **intercepts** the **404 status code* and **re-executes** the pipeline pointing it to the URL (**/Error/404**)
+- The request flows through the pipeline and handled by the MVC middleware which returns `NotFound` view HTML along with status code **200**
+- As the response flows out to the client, it passes through `UseStatusCodePagesWithReExecute` middleware which uses the HTML response 
+but **replaces the 200 status code with the original 404 status code**.
+- This is a clever piece of middleware. As the name implies it **re-executes the pipeline keeping the correct (404) status code**. 
+It just returns the custom view (NotFound) HTML
+- As it is just re-executing the pipeline and **not issuing a redirect request**, we also preserve the **original URL** (`/foo/bar`) in the address bar. 
+It **does not change** from `/foo/bar` to `/Error/404`.
 
+<p align="center">
+  <img src="https://i.ibb.co/JFGyL7c/usestatuscodepageswithreexecute-vs-usestatuscodepageswithredirects.png">
+</p>
 
+If you are using `UseStatusCodePagesWithReExecute` middleware, 
+it's also possible to get the original path in the `ErrorController` using `IStatusCodeReExecuteFeature` interface as shown below. 
 
+```C#
+public class ErrorController : Controller
+{
+    [Route("Error/{statusCode}")]
+    public IActionResult HttpStatusCodeHandler(int statusCode)
+    {
+        var statusCodeResult =
+                HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
 
+        switch (statusCode)
+        {
+            case 404:
+                ViewBag.ErrorMessage =
+                        "Sorry, the resource you requested could not be found";
+                ViewBag.Path = statusCodeResult.OriginalPath;
+                ViewBag.QS = statusCodeResult.OriginalQueryString;
+                break;
+        }
+
+        return View("NotFound");
+    }
+}
+```
+
+You can then display it in the custom error view as shown below 
+
+```HTML
+@{
+    ViewBag.Title = "Not Found";
+}
+
+<h1>@ViewBag.ErrorMessage</h1>
+
+<h1>@ViewBag.Path</h1>
+
+<h1>@ViewBag.QS</h1>
+
+<a asp-action="index" asp-controller="home">
+    Click here to navigate to the home page
+</a>
+```
+
+<p align="center">
+  <img src="https://i.ibb.co/R6jx86d/Use-Status-Code-Pages-With-Re-Execute-Path-And-Query.png">
+</p>
 
 #### [Back to Table of Contents](#table-of-contents)
 
