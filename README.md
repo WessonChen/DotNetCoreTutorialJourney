@@ -53,6 +53,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 45. [Ep 57 - Handling 404 Not Found in .Net Core MVC](#ep-57---handling-404-not-found-in-net-core-mvc)
 46. [Ep 59 - UseStatusCodePagesWithRedirects vs UseStatusCodePagesWithReExecute](#ep-59---usestatuscodepageswithredirects-vs-usestatuscodepageswithreexecute)
 47. [Ep 60 - Global Exception Handling in .Net Core MVC](#ep-60---global-exception-handling-in-net-core-mvc)
+48. [Ep 61 - Logging in .Net Core MVC](#ep-61---logging-in-net-core-mvc)
 
  
 ## Notes
@@ -4003,20 +4004,84 @@ public class ErrorController : Controller
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 61 - [Logging in .Net Core MVC](https://www.youtube.com/watch?v=WyAJe6lA-bY&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=61)
 
+**Logging providers in ASP.NET Core**
 
+A logging provider is the component that stores or displays logs. For example, the Console log provider displays logs on the console. 
+Similarly, the Debug log provider displays logs on the Debug window in Visual Studio.
 
+**ASP.NET Core built-in logging providers**
+- Console
+- Debug
+- EventSource
+- EventLog
+- TraceSource
+- AzureAppServicesFile
+- AzureAppServicesBlob
+- ApplicationInsights
 
+**Third party logging providers for ASP.NET Core**
+- NLog
+- elmah
+- Serilog
+- Sentry
+- Gelf
+- JSNLog
+- KissLog.net
+- Loggr
+- Stackdriver
 
+**Default logging providers in ASP.NET Core** 
 
+`Main()` method in the `Program` class in `Program.cs` file is the entry point for an asp.net core application. 
+This method calls `CreateDefaultBuilder()` method performs several tasks like  
+- Setting up the web server 
+- Loading the host and application configuration from various configuration sources and 
+- Configuring logging
 
+Since ASP.NET Core is open source we can see the complete source on their official github page. 
+The following is the code snippet from `CreateDefaultBuilder()` method.  
 
+```C#
+.ConfigureLogging((hostingContext, logging) =>
+{
+    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+    logging.AddConsole();
+    logging.AddDebug();
+    logging.AddEventSourceLogger();
+})
+```
 
+As part of configuring logging, `CreateDefaultBuilder()` method adds the following 3 logging providers by default. 
+This is the reason when we run the asp.net core project we see the log displayed both on the `console` and on the `debug window` in Visual Studio. 
+- Console
+- Debug
+- EventSource
 
+`CreateDefaultBuilder()` method looks for `Logging` section in the application configuration file `appsettings.json`.
 
+**Logging section in appsettings.json**
 
+```JSON
+"Logging": {
+  "LogLevel": {
+    "Default": "Warning",
+    "Microsoft":  "Warning"
+  }
+}
+```
 
+LogLevel is used to control how much log data is logged or displayed.
 
+To turn off iisexpress.exe logs under debug tab in visual studio, in Visual Studio click on Tools - Options. 
+On the Options window, under Debugging - Output Window turn off the messages you do not need. 
+
+<p align="center">
+  <img src="https://i.ibb.co/7zrnpfs/visual-studio-debug-tab-turn-off-isexpress-exe-messages.png">
+</p>
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
