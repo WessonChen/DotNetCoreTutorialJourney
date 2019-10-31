@@ -57,6 +57,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 49. [Ep 62 - Logging Exceptions in .Net Core MVC](#ep-62---logging-exceptions-in-net-core-mvc)
 50. [Ep 63 - Logging to File in .Net Core MVC Using Nlog](#ep-63---logging-to-file-in-net-core-mvc-using-nlog)
 51. [Ep 64 - LogLevel Configuration in .Net Core MVC](#ep-64---loglevel-configuration-in-net-core-mvc)
+52. [Ep 65 - Identity in .Net Core MVC](#ep-65---identity-in-net-core-mvc)
 
  
 ## Notes
@@ -4306,7 +4307,7 @@ namespace DotNetCoreTutorialJourney
 
 #### [Back to Table of Contents](#table-of-contents)
 
-### Ep 64 - [LogLevel Configuration in .Net Core MVC](https://www.youtube.com/watch?v=o5u4fE0t79k&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=63)
+### Ep 64 - [LogLevel Configuration in .Net Core MVC](https://www.youtube.com/watch?v=bTPnT13Efd4&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=64)
 
 **LogLevel enum** is present in `Microsoft.Extensions.Logging` namespace 
 
@@ -4468,26 +4469,125 @@ Make sure the log level configuration in the environment specific appsettings.js
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 65 - [Identity in .Net Core MVC](https://www.youtube.com/watch?v=egITMrwMOPU&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=65)
 
+**ASP.NET Core Identity**
 
+ASP.NET Core Identity is a membership system. It allows us to create, read, update and delete user accounts. 
+Supports account confirmation, authentication, authorisation, password recovery, two-factor authentication with SMS. 
+It also supports external login providers like Microsoft, Facebook, Google etc.
 
+**Adding ASP.NET Core Identity Support in ASP.NET Core Application**
 
+The following are the steps to add and configure ASP.NET Core Identity 
 
+**Step 1** : Inherit from `IdentityDbContext` class 
 
+```C#
+public class AppDbContext : IdentityDbContext
+{
+    // Rest of the code
+}
+```
 
+Your application DbContext class must inherit from `IdentityDbContext` class instead of `DbContext` class. 
+This is required because `IdentityDbContext` provides all the `DbSet` properties needed to manage the identity tables in SQL Server. 
+If you go through the hierarchy chain of `IdentityDbContext` class, you will see it inherits from `DbContext` class. 
+So this is the reason you do not have to explicitly inherit from `DbContext` class if your class is inheriting from `IdentityDbContext` class.
 
+**Step 2 : Configure ASP.NET Core Identity Services**
 
+In `ConfigureServices()` method of the `Startup` class, include the following line of code.
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddDbContextPool<AppDbContext>(
+        options => options.UseSqlServer(_configuration.GetConnectionString("EmployeeDBConnection")));
 
+    services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
 
+    services.AddMvc().AddXmlSerializerFormatters();
+    services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
+}
+```
 
+- `AddIdentity()` method adds the default identity system configuration for the specified user and role types.
+- `IdentityUser` class is provided by ASP.NET core and contains properties for `UserName`, `PasswordHash`, `Email` etc. 
+This is the class that is used by default by the ASP.NET Core Identity framework to manage registered users of your application. 
+- If you want store additional information about the registered users like their `Gender`, `City` etc. 
+Create a custom class that derives from `IdentityUser`. In this custom class add the additional properties you need 
+and then plug-in this class instead of the built-in `IdentityUser` class.
+- Similarly, `IdentityRole` is also a builtin class provided by ASP.NET Core Identity and contains Role information.
+- We want to store and retrieve User and Role information of the registered users using EntityFrameWork Core from the underlying SQL Server database. 
+We specify this using `AddEntityFrameworkStores<AppDbContext>()` passing our application `DbContext` class as the generic argument.
 
+**Step 3** : Add Authentication middleware to the request pipeline 
 
+```C#
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    if (env.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    } else
+    {
+        app.UseExceptionHandler("/Error");
+        app.UseStatusCodePagesWithReExecute("/Error/{0}");
+    }
 
+    app.UseStaticFiles();
+    app.UseAuthentication();
+    app.UseMvcWithDefaultRoute();
+}
+```
 
+In the `Configure()` method of the Startup class, call `UseAuthentication()` method to add the **Authentication middleware** to the application's request processing pipeline. 
+We want to be able to authenticate users **before** the request reaches the **MVC middleware**. 
+So it's important we add authentication middleware **before the MVC middleware** in the request processing pipeline. 
 
+**Step 4** : Add Identity Migration
 
+In Visual Studio, from the Package Manager Console window execute the following command to add a new migration 
 
+> Add-Migration AddingIdentity
+
+This migration contains code that creates the tables required by the ASP.NET Core Identity system.
+
+> Error : The entity type 'IdentityUserLogin<string>' requires a primary key to be defined
+
+If you get this error, the most likely cause is that you are overriding `OnModelCreating()` method in your application `DbContext` class 
+but not calling the base `IdentityDbContext` class `OnModelCreating()` method. 
+
+Keys of Identity tables are mapped in `OnModelCreating` method of `IdentityDbContext` class. So, to fix this error, all you need to do is, 
+call the base class `OnModelCreating()` method using the `base` keyword as shown below. 
+
+```C#
+public class AppDbContext : IdentityDbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+    : base(options)
+    {
+    }
+
+    public DbSet<Employee> Employees { get; set; }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.Seed();
+    }
+}
+```
+
+**Step 5** : Generate ASP.NET Core Identity Tables 
+
+> Update-Database
+
+<p align="center">
+  <img src="https://i.ibb.co/xXYfHsH/asp-net-core-identity-tutorial.png">
+</p>
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
