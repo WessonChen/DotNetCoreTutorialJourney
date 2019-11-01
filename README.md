@@ -63,6 +63,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 55. [Ep 68 - Identity Password Complexity in .Net Core MVC](#ep-68---identity-password-complexity-in-net-core-mvc)
 56. [Ep 69 - Navigation Bar Based on Login Status in .Net Core MVC](#ep-69---navigation-bar-based-on-login-status-in-net-core-mvc)
 57. [Ep 70 - Login in .Net Core MVC](#ep-70---login-in-net-core-mvc)
+58. [Ep 71 - Authorization in .Net Core MVC](#ep-71---authorization-in-net-core-mvc)
 
  
 ## Notes
@@ -4966,18 +4967,100 @@ public async Task<IActionResult> Login(LoginViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 71 - [Authorization in .Net Core MVC](https://www.youtube.com/watch?v=uET7MjhUeY4&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=71)
 
+**What is Authorization in ASP.NET Core**
 
+- Authentication is the process of identifying who the user is. 
+- Authorization is the process of identifying what the user can and cannot do.
+- For example, if the logged in user is an administrator he may be able to Create, Read, Update and Delete orders, 
+where as a normal user may only view orders but not Create, Update or Delete orders.
+- Authorization in ASP.NET Core MVC is controlled through the **AuthorizeAttribute**
 
+**Authorize Attribute**
 
+When the Authorize attribute is used in it's simplest form, without any parameters, it only checks if the user is authenticated. 
 
+**Authorize Attribute Example**
 
+As the Authorize attribute is applied on the Controller, it is applicable to all the action methods in the controller. 
+The user must be logged in, to access any of the controller action methods. 
 
+```C#
+[Authorize]
+public class HomeController : Controller
+{
+    public ViewResult Details(int? id)
+    { 
+    }
+}
 
+Authorize attribute can be applied on individual action methods as well.
 
+```C#
+public class HomeController : Controller
+}
+    [Authorize]
+    public ViewResult Details(int? id)
+    { 
+    }
+}
+````
 
+**AllowAnonymous Attribute**
 
+As the name implies, AllowAnonymous attribute allows anonymous access. 
+We generally use this attribute in combination with the Authorize attribute.
 
+As the Authorize attribute is applied at the controller level, all the action methods in the controller are protected from anonymous access. 
+However, since the Details action method is decorated with AllowAnonymous attribute, it will be allowed anonymous access. 
+
+```C#
+[Authorize]
+public class HomeController : Controller
+{
+    [AllowAnonymous]
+    public ViewResult Details(int? id)
+    {
+    }
+}
+```
+
+**Please note**: If you apply `[AllowAnonymous]` attribute at the controller level, any `[Authorize]` attribute attribute on the same controller actions is ignored. 
+
+**Apply Authorize attribute globally**
+
+To apply `[Authorize]` attribute **globally on all controllers **and controller actions throughout your application 
+modify the code in `ConfigureServices` method of the `Startup` class. 
+
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    // Other Code
+
+    services.AddMvc(config => {
+        var policy = new AuthorizationPolicyBuilder()
+                        .RequireAuthenticatedUser()
+                        .Build();
+        config.Filters.Add(new AuthorizeFilter(policy));
+    });
+
+    // Other Code
+}
+```
+- `AuthorizationPolicyBuilder` is in `Microsoft.AspNetCore.Authorization` namespace 
+- `AuthorizeFilter` is in `Microsoft.AspNetCore.Mvc.Authorization` namespace
+
+If you do not have `[AllowAnonymous]` attribute on the `Login` actions of the `AccountController` 
+you will get the following error because the application is stuck in an infinite loop.  
+
+> HTTP Error 404.15 - Not Found 
+
+Because when you access `login` page, you will be redirect to `login` page, which is a infinite loop.
+
+In addition to this simple authorization, asp.net core supports **role based**, **claims based** and **policy based** authorization.
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

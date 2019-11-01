@@ -1,4 +1,5 @@
 ﻿using DotNetCoreTutorialJourney.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -18,12 +19,14 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public ViewResult Login()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
@@ -48,12 +51,14 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public ViewResult Register()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)

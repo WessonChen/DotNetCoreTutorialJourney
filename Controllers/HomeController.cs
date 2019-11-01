@@ -1,5 +1,6 @@
 ﻿using DotNetCoreTutorialJourney.Models;
 using DotNetCoreTutorialJourney.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,11 +20,13 @@ namespace DotNetCoreTutorialJourney.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [AllowAnonymous]
         public ViewResult Index()
         {
             return View(_employeeRepository.GetAllEmployee());
         }
 
+        [AllowAnonymous]
         public ViewResult Details(int id)
         {
             Employee employee = _employeeRepository.GetEmployee(id);
