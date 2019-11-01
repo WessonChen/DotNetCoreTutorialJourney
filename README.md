@@ -62,6 +62,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 54. [Ep 67 - Register in .Net Core MVC by UserManager and SignInManager](#ep-67---register-in-net-core-mvc-by-usermanager-and-signinmanager)
 55. [Ep 68 - Identity Password Complexity in .Net Core MVC](#ep-68---identity-password-complexity-in-net-core-mvc)
 56. [Ep 69 - Navigation Bar Based on Login Status in .Net Core MVC](#ep-69---navigation-bar-based-on-login-status-in-net-core-mvc)
+57. [Ep 70 - Login in .Net Core MVC](#ep-70---login-in-net-core-mvc)
 
  
 ## Notes
@@ -4858,18 +4859,112 @@ public async Task<IActionResult> Logout()
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 70 - [Login in .Net Core MVC](https://www.youtube.com/watch?v=9d8DXXc71RI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=70)
 
+**LoginViewModel**
 
+To login a user, we need their Email which is the username, password and whether if they want a persistent cookie or session cookie. 
 
+```C#
+using System.ComponentModel.DataAnnotations;
 
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class LoginViewModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
 
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
 
+        [Display(Name = "Remember me")]
+        public bool RememberMe { get; set; }
+    }
+}
+```
 
+**Session Cookie vs Persistent Cookie**
 
+Upon a successful login, a cookie is issued and this cookie is sent with each request to the server. 
+The server uses this cookie to know that the user is already authenticated and logged-in. 
+This cookie can either be a session cookie or a persistent cookie. 
 
+A session cookie is created and stored within the session instance of the browser. 
+A session cookie does not contain an expiration date and is permanently deleted when the browser window is closed. 
 
+A persistent cookie on the other hand is not deleted when the browser window is closed. 
+It usually has an expiry date and deleted on the date of expiry. 
 
+**Login View**
 
+```HTML
+@model LoginViewModel
+
+@{
+    ViewBag.Title = "User Login";
+}
+
+<h1>User Login</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <form method="post" autocomplete="off">
+            <div class="form-group">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="checkbox">
+                    <label asp-for="RememberMe">
+                        <input asp-for="RememberMe" />
+                        @Html.DisplayNameFor(m => m.RememberMe)
+                    </label>
+                </div>
+            </div>
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+</div>
+```
+
+**Login Action in AccountController**
+
+```C#
+[HttpGet]
+public ViewResult Login()
+{
+    return View();
+}
+
+[HttpPost]
+public async Task<IActionResult> Login(LoginViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+
+        if (result.Succeeded)
+        {
+            return RedirectToAction("index", "home");
+        }
+
+        ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+    }
+    return View(model);
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
