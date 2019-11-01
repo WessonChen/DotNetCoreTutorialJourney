@@ -66,6 +66,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 58. [Ep 71 - Authorization in .Net Core MVC](#ep-71---authorization-in-net-core-mvc)
 59. [Ep 72 - Redirect User to Original URL after Login in .Net Core MVC](#ep-72---redirect-user-to-original-url-after-login-in-net-core-mvc)
 60. [Ep 73 - Open redirect vulnerability example](#ep-73---open-redirect-vulnerability-example)
+61. [Ep 74 - Client Side Validation in .Net Core MVC](#ep-74---client-side-validation-in-net-core-mvc)
 
  
 ## Notes
@@ -5165,20 +5166,64 @@ public IActionResult Login(string returnUrl)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 74 - [Client Side Validation in .Net Core MVC](https://www.youtube.com/watch?v=PUX3PzyBofg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=74)
 
+**Server Side Validation**
 
+As the name implies, server side validation is done on the server. So there is a round trip between the client browser and the web server. 
+The request has to be sent over the network to the web server for processing. This means if the network is slow or 
+if the server is busy processing other requests, the end user may have to wait a few seconds and it also increases load on the server.  
 
+This validation can be performed on the client machine itself, which means there is no round trip to the server, no waiting time, 
+client has instant feedback and the load on the server is also reduced to a great extent. 
 
+We decorate the respective model properties with the `[Required]` attribute for server side validation
 
+**Client Side Validation**
 
+There are 2 approaches that you could take to implement client side validation in asp.net core. 
 
+**Approach 1** : Write your own custom JavaScript code to implement client-side validation which is obviously tedious and time consuming. 
 
+**Approach 2** : Use the unobtrusive client-side validation libraries provided by asp.net core. 
 
+With the second approach, we do not have to write a single line of code. All we have to do is include the following 3 scripts in the order specified. 
 
+```HTML
+<script src="~/node_modules/jquery/dist/jquery.slim.js"></script>
+<script src="~/node_modules/jquery-validation/dist/jquery.validate.js"></script>
+<script src="~/node_modules/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.js"></script>
+```
 
+**What does "Unobtrusive Validation" Mean**
 
+Unobtrusive Validation allows us to take the already-existing server side validation attributes and use them to implement client-side validation. 
+We do not have to write a single line of custom JavaScript code. All we need is the above 3 script files in the order specified. 
 
+The unobtrusive validation is done using the jquery.validate.unobtrusive.js library. This library is built on top of jquery.validate.js library, 
+which in turns uses jQuery. This is the reason we need to import these 3 libraries in the order specified. 
 
+**How does client side validation work in ASP.NET Core**
+
+The Email property is decorated with `[Required]` attribute. To generate input field for Email, we use asp.net core input tag helper 
+
+```HTML
+<input asp-for="Email"/>
+```
+
+ASP.NET Core tag helpers work in combination with the model validation attributes and generate the following HTML. 
+Notice in the generated HTML we have `data-*` attributes. 
+
+```HTML
+<input id="Email" name="Email" type="email" data-val="true"
+       data-val-required="The Email field is required." />
+```
+
+The `data-*` attributes allow us to add extra information to an HTML element. 
+These `data-*` attributes carry all the information required to perform the client-side validation. 
+It is the unobtrusive library (i.e `jquery.validate.unobtrusive.js`) that reads these `data-val` attributes and performs the client side validation. 
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
