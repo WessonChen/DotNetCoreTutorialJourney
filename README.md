@@ -67,6 +67,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 59. [Ep 72 - Redirect User to Original URL after Login in .Net Core MVC](#ep-72---redirect-user-to-original-url-after-login-in-net-core-mvc)
 60. [Ep 73 - Open redirect vulnerability example](#ep-73---open-redirect-vulnerability-example)
 61. [Ep 74 - Client Side Validation in .Net Core MVC](#ep-74---client-side-validation-in-net-core-mvc)
+62. [Ep 75 - Remote Validation in .Net Core MVC](#ep-75---remote-validation-in-net-core-mvc)
 
  
 ## Notes
@@ -5225,20 +5226,44 @@ It is the unobtrusive library (i.e `jquery.validate.unobtrusive.js`) that reads 
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 75 - [Remote Validation in .Net Core MVC](https://www.youtube.com/watch?v=2jZc11l67Zk&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=75)
 
 
+**What is Remote Validation**
 
+Remote validation allows a controller action method to be called using client side script. 
+This is very useful when you want to call a server side method without a full page post back. 
 
+For example, check if the provided email is already taken by another user can only be done on the server. 
+The following `IsEmailInUse()` controller action method checks if the provided email is in use. 
 
+```C#
+[HttpGet]
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> IsEmailInUse(string email) => 
+	Json(await _userManager.FindByEmailAsync(email) == null ? "true" : $"Email {email} is already in use.");
+```
 
+- ASP.NET Core MVC uses jQuery `remote()` method which in turn issues an **AJAX** call to invoke the server side method. 
+- The jQuery `remote()` method expects a JSON response, 
+this is the reason we are returning JSON response from the server-side method (IsEmailInUse)
 
+**ASP.NET core remote attribute**
 
+```C#
+public class RegisterViewModel
+{
+    [Required]
+    [EmailAddress]
+    [Remote(action: "IsEmailInUse", controller: "Account")]
+    public string Email { get; set; }
 
+    // Other properties
+}
+```
 
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

@@ -18,11 +18,14 @@ namespace DotNetCoreTutorialJourney.Controllers
             _signInManager = signInManager;
         }
 
-        [HttpGet][AllowAnonymous]
-        public ViewResult Login()
-        {
-            return View();
-        }
+        [HttpGet]
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> IsEmailInUse(string email) => Json(await _userManager.FindByEmailAsync(email) == null ? "true" : $"Email {email} is already in use.");
+
+        [HttpGet]
+        [AllowAnonymous]
+        public ViewResult Login() => View();
 
         [HttpPost]
         [AllowAnonymous]
@@ -53,10 +56,7 @@ namespace DotNetCoreTutorialJourney.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public ViewResult Register()
-        {
-            return View();
-        }
+        public ViewResult Register() => View();
 
         [HttpPost]
         [AllowAnonymous]
