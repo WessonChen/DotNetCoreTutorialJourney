@@ -61,6 +61,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 53. [Ep 66 - Register in .Net Core MVC](#ep-66---register-in-net-core-mvc)
 54. [Ep 67 - Register in .Net Core MVC by UserManager and SignInManager](#ep-67---register-in-net-core-mvc-by-usermanager-and-signinmanager)
 55. [Ep 68 - Identity Password Complexity in .Net Core MVC](#ep-68---identity-password-complexity-in-net-core-mvc)
+56. [Ep 69 - Navigation Bar Based on Login Status in .Net Core MVC](#ep-69---navigation-bar-based-on-login-status-in-net-core-mvc)
 
  
 ## Notes
@@ -4804,6 +4805,56 @@ In this example, we are using the `IdentityOptions` object to configure `Passwor
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 69 - [Navigation Bar Based on Login Status in .Net Core MVC](https://www.youtube.com/watch?v=YLAHIZmO2PI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=69)
+
+First, inject `SignInManager` in `_Layout.cshtml`
+```
+@inject SignInManager<IdentityUser> SignInManager
+```
+
+Because this injection depends on `Microsoft.AspNetCore.Identity`, we need to import it in `_ViewImports.cshtml`
+```
+@using Microsoft.AspNetCore.Identity
+```
+
+Then, in `_Layout.cshtml`
+```HTML
+<ul class="navbar-nav ml-auto">
+    @if (_signinmanager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <form method="post" asp-controller="account" asp-action="logout">
+                <button type="submit" class="nav-link btn btn-link py-0" style="width: auto">
+                    Logout @User.Identity.Name
+                </button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="account" asp-action="register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="account" asp-action="login">Login</a>
+        </li>
+    }
+</ul>
+```
+
+Use a **POST** request to log the user out. Using a **GET** request to log out the user is **not recommended** 
+because the approach may be abused. A malicious user may trick you into clicking an image element where the src attribute is set to the application logout url. 
+As a result you are unknowingly logged out. 
+
+In `AccountCountroller.cs` add 
+```C#
+[HttpPost]
+public async Task<IActionResult> Logout()
+{
+    await _signInManager.SignOutAsync();
+    return RedirectToAction("index", "home");
+}
+```
 
 
 
@@ -4818,6 +4869,8 @@ In this example, we are using the `IdentityOptions` object to configure `Passwor
 
 
 
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
