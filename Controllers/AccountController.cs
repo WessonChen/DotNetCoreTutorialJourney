@@ -34,9 +34,9 @@ namespace DotNetCoreTutorialJourney.Controllers
 
                 if (result.Succeeded)
                 {
-                    if (string.IsNullOrEmpty(returnUrl))
-                        return RedirectToAction("index", "home");
-                    return Redirect(returnUrl);
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                        return Redirect(returnUrl);
+                    return RedirectToAction("index", "home");
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid Login Attempt");

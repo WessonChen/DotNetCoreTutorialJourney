@@ -65,6 +65,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 57. [Ep 70 - Login in .Net Core MVC](#ep-70---login-in-net-core-mvc)
 58. [Ep 71 - Authorization in .Net Core MVC](#ep-71---authorization-in-net-core-mvc)
 59. [Ep 72 - Redirect User to Original URL after Login in .Net Core MVC](#ep-72---redirect-user-to-original-url-after-login-in-net-core-mvc)
+60. [Ep 73 - Open redirect vulnerability example](#ep-73---open-redirect-vulnerability-example)
 
  
 ## Notes
@@ -5114,21 +5115,55 @@ This **opens a serious security hole** with in our application which is commonly
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 73 - [Open Redirect Vulnerability Example](https://www.youtube.com/watch?v=0q0CZTliQ7A&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=73)
 
+**Application Vulnerable to Open Redirect Attacks**
 
+Your application is vulnerable to open redirect attacks if the following 2 conditions are true 
 
+1. Your application redirects to a URL that's specified **via the request** such as the querystring or form data
+2. The redirection is performed **without checking** if the URL is a **local URL**
 
+**Open Redirect Vulnerability Example**
 
+- The user of your application is tricked into clicking a link in an email where the returnUrl is set to the attackers website. 
+> http://example.com/account/login?returnUrl=http://exampie.com/account/login
 
+- The user logs in successfully on the authentic site and he is then redirected to the attackers website
+> http://exampie.com/account/login
 
+- The login page of the attackers website looks exactly like the authentic site.
+- The user logs in again on the attackers website, thinking that the first login attempt was unsuccessful
+- The user is then redirected back to the authentic site.
+- During this entire process, the user does not even know his credentials are stolen.
 
+**Prevent open redirect attacks**
 
+We have an open redirect vulnerability because, the URL is supplied to the application from the query string.
+We are simply redirecting to that URL without any validation
+which is what is making our application vulnerable to open redirect attacks. 
 
+ASP.NET Core has **built-in support** for local redirection. Simply use the `LocalRedirect()` method. **If a non-local URL is specified an exception is thrown**
 
+```C#
+public IActionResult Login(string returnUrl)
+{
+    return LocalRedirect(returnUrl);
+}
+```
 
+Or, check if the provided URL is a local URL, use `IsLocalUrl()` method. 
 
+```C#
+public IActionResult Login(string returnUrl)
+{
+    if (Url.IsLocalUrl(returnUrl))
+        return Redirect(returnUrl);
+	return RedirectToAction("index", "home");
+}
+```
 
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
