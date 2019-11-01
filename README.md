@@ -64,6 +64,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 56. [Ep 69 - Navigation Bar Based on Login Status in .Net Core MVC](#ep-69---navigation-bar-based-on-login-status-in-net-core-mvc)
 57. [Ep 70 - Login in .Net Core MVC](#ep-70---login-in-net-core-mvc)
 58. [Ep 71 - Authorization in .Net Core MVC](#ep-71---authorization-in-net-core-mvc)
+59. [Ep 72 - Redirect User to Original URL after Login in .Net Core MVC](#ep-72---redirect-user-to-original-url-after-login-in-net-core-mvc)
 
  
 ## Notes
@@ -5062,23 +5063,56 @@ In addition to this simple authorization, asp.net core supports **role based**, 
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 72 - [Redirect User to Original URL after Login in .Net Core MVC](https://www.youtube.com/watch?v=-asykt9Zo_w&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=72)
 
+**ReturnUrl**
 
+By default, ASP.NET Core redirects to the login URL with `ReturnUrl` query string parameter. 
+The URL that we were trying to access will be the value of the `ReturnUrl` query string parameter. 
 
+**ReturnUrl Query String Example**
 
+In this example, `ReturnUrl` is set to `ReturnUrl=/home/create`. 
+I was trying to Create a New Employee by navigating to `/home/create` **without** first signing in. 
 
+> http://localhost:5000/Account/Login?ReturnUrl=%2Fhome%2Fcreate
 
+The characters %2F are the encoded characters for a forward slash (/).
 
+**Redirect to ReturnUrl after Login**
 
+ASP.NET Core model binding automatically maps the value 
+- from the URL query string parameter ReturnUrl 
+- to the Login() action method parameter returnUrl
 
+ASP.NET Core Redirect(returnUrl) method, redirects the user to the specified returnUrl
 
+```C#
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
+{
+    if (ModelState.IsValid)
+    {
+        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
 
+        if (result.Succeeded)
+        {
+            if (string.IsNullOrEmpty(returnUrl))
+                return RedirectToAction("index", "home");
+            return Redirect(returnUrl);
+        }
 
+        ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+    }
+    return View(model);
+}
+```
 
+There is a serious flaw in the way we have used the ReturnUrl query string parameter. 
+This **opens a serious security hole** with in our application which is commonly known as open **redirect vulnerability**.  
 
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

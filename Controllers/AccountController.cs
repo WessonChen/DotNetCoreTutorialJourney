@@ -18,8 +18,7 @@ namespace DotNetCoreTutorialJourney.Controllers
             _signInManager = signInManager;
         }
 
-        [HttpGet]
-        [AllowAnonymous]
+        [HttpGet][AllowAnonymous]
         public ViewResult Login()
         {
             return View();
@@ -27,7 +26,7 @@ namespace DotNetCoreTutorialJourney.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
         {
             if (ModelState.IsValid)
             {
@@ -35,7 +34,9 @@ namespace DotNetCoreTutorialJourney.Controllers
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("index", "home");
+                    if (string.IsNullOrEmpty(returnUrl))
+                        return RedirectToAction("index", "home");
+                    return Redirect(returnUrl);
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
