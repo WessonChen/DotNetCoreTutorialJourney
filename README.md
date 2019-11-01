@@ -58,6 +58,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 50. [Ep 63 - Logging to File in .Net Core MVC Using Nlog](#ep-63---logging-to-file-in-net-core-mvc-using-nlog)
 51. [Ep 64 - LogLevel Configuration in .Net Core MVC](#ep-64---loglevel-configuration-in-net-core-mvc)
 52. [Ep 65 - Identity in .Net Core MVC](#ep-65---identity-in-net-core-mvc)
+53. [Ep 66 - Register in .Net Core MVC](#ep-66---register-in-net-core-mvc)
 
  
 ## Notes
@@ -4589,20 +4590,119 @@ public class AppDbContext : IdentityDbContext
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 66 - [Register in .Net Core MVC](https://www.youtube.com/watch?v=sPbDrqpme_w&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=66)
 
+**RegisterViewModel Class**
 
+We will use this `RegisterViewModel` Class as the model for Register view. It carries the information from the view to the controller class. 
+For validation we are using several asp.net core validation attributes.
 
+```C#
+using System.ComponentModel.DataAnnotations;
 
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class RegisterViewModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
 
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
 
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        [Compare("Password",
+            ErrorMessage = "Password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; }
+    }
+}
+```
 
+**AccountController**
 
+```C#
+using DotNetCoreTutorialJourney.ViewModels;
+using Microsoft.AspNetCore.Mvc;
 
+namespace DotNetCoreTutorialJourney.Controllers
+{
+    public class AccountController : Controller
+    {
+        [HttpGet]
+        public ViewResult Register()
+        {
+            return View();
+        }
 
+        [HttpPost]
+        public ViewResult Register(RegisterViewModel registerViewModel)
+        {
+            return View();
+        }
+    }
+}
+```
 
+**Register View **
 
+Place this view in `Views/Account` folder
 
+```HTML
+@model RegisterViewModel
 
+@{
+    ViewBag.Title = "User Registration";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <form method="post">
+            <div class="form-group">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmPassword"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div>
+</div>
+```
+
+**Register Link in the Layout View**
+
+```HTML
+<div class="collapse navbar-collapse" id="collapsibleNavbar">
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="home" asp-action="index">List</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="home" asp-action="create">Create</a>
+        </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="account" asp-action="register">Register</a>
+        </li>
+    </ul>
+</div>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
