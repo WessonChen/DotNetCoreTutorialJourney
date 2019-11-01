@@ -60,6 +60,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 52. [Ep 65 - Identity in .Net Core MVC](#ep-65---identity-in-net-core-mvc)
 53. [Ep 66 - Register in .Net Core MVC](#ep-66---register-in-net-core-mvc)
 54. [Ep 67 - Register in .Net Core MVC by UserManager and SignInManager](#ep-67---register-in-net-core-mvc-by-usermanager-and-signinmanager)
+55. [Ep 68 - Identity Password Complexity in .Net Core MVC](#ep-68---identity-password-complexity-in-net-core-mvc)
 
  
 ## Notes
@@ -4745,25 +4746,63 @@ public async Task<IActionResult> Register(RegisterViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 68 - [Identity Password Complexity in .Net Core MVC](https://www.youtube.com/watch?v=kC9qrUcy2Js&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=68)
 
+**ASP.NET Core Identity Password Default Settings**
 
+In ASP.NET Core Identity, Password Default Settings are specified in the `PasswordOptions` class. 
+You can find the source code [HERE](https://github.com/aspnet/AspNetCore/blob/44e68134528e3095064dc04bcb44effab3cb52df/src/Identity/Extensions.Core/src/PasswordOptions.cs).
 
+```C#
+public class PasswordOptions
+{
+    public int RequiredLength { get; set; } = 6;
+    public int RequiredUniqueChars { get; set; } = 1;
+    public bool RequireNonAlphanumeric { get; set; } = true;
+    public bool RequireLowercase { get; set; } = true;
+    public bool RequireUppercase { get; set; } = true;
+    public bool RequireDigit { get; set; } = true;
+}
+```
 
+**How to override password default settings in asp.net core identity**
 
+We could do this by, using the `Configure()` method of the `IServiceCollection` interface in the `ConfigureServices()` method of the `Startup` class 
 
+```C#
+services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequiredLength = 10;
+    options.Password.RequiredUniqueChars = 3;
+    options.Password.RequireNonAlphanumeric = false;
+});
+```
 
+OR 
 
+**We could also do this while adding Identity services**
 
+```C#
+services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{
+    options.Password.RequiredLength = 10;
+    options.Password.RequiredUniqueChars = 3;
+    options.Password.RequireNonAlphanumeric = false;
+})
+.AddEntityFrameworkStores<AppDbContext>();
+```
 
+**ASP.NET Core IdentityOptions**
 
+In this example, we are using the `IdentityOptions` object to configure `PasswordOptions`. We could also use this `IdentityOptions` object to configure 
+- UserOptions
+- SignInOptions
+- LockoutOptions
+- TokenOptions
+- StoreOptions
+- ClaimsIdentityOptions
 
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
