@@ -26,15 +26,13 @@ namespace DotNetCoreTutorialJourney.Controllers
 
         public ViewResult Details(int id)
         {
-            throw new Exception("Error in Details View");
-
-            //Employee employee = _employeeRepository.GetEmployee(id);
-            //if (employee == null)
-            //{
-            //    Response.StatusCode = 404;
-            //    return View("EmployeeNotFound", id);
-            //}
-            //return View(employee);
+            Employee employee = _employeeRepository.GetEmployee(id);
+            if (employee == null)
+            {
+                Response.StatusCode = 404;
+                return View("EmployeeNotFound", id);
+            }
+            return View(employee);
         }
 
         [HttpGet]
