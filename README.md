@@ -59,6 +59,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 51. [Ep 64 - LogLevel Configuration in .Net Core MVC](#ep-64---loglevel-configuration-in-net-core-mvc)
 52. [Ep 65 - Identity in .Net Core MVC](#ep-65---identity-in-net-core-mvc)
 53. [Ep 66 - Register in .Net Core MVC](#ep-66---register-in-net-core-mvc)
+54. [Ep 67 - Register in .Net Core MVC by UserManager and SignInManager](#ep-67---register-in-net-core-mvc-by-usermanager-and-signinmanager)
 
  
 ## Notes
@@ -4704,10 +4705,45 @@ Place this view in `Views/Account` folder
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 67 - [Register in .Net Core MVC by UserManager and SignInManager](https://www.youtube.com/watch?v=TfarnVqnhX0&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=67)
 
+`UserManager<IdentityUser>` class contains the required methods to manage users in the underlying data store. 
+For example, this class has methods like `CreateAsync`, `DeleteAsync`, `UpdateAsync` to create, delete and update users.
 
+`SignInManager<IdentityUser>` class contains the required methods for users signin. 
+For example, this class has methods like `SignInAsync`, `SignOutAsync` to signin and signout a user. 
+- Both `UserManager` and `SignInManager` services are injected into the `AccountController` using constructor injection
+- Both these services accept a generic parameter. We use the generic parameter to specify the User class that these services should work with.
+- At the moment, we are using the built-in `IdentityUser` class as the argument for the generic parameter.
+- The generic parameter on these 2 services is an extension point. 
+- This means, we can create our own custom user with any additional data that we want to capture about the user 
+and then plug-in this custom class as an argument for the generic parameter instead of the built-in IdentityUser class. 
 
+```C#
+[HttpPost]
+public async Task<IActionResult> Register(RegisterViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+        var result = await _userManager.CreateAsync(user, model.Password);
 
+        if (result.Succeeded)
+        {
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            return RedirectToAction("index", "home");
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError("", error.Description);
+        }
+    }
+    return View(model);
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
