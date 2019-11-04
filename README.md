@@ -69,7 +69,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 61. [Ep 74 - Client Side Validation in .Net Core MVC](#ep-74---client-side-validation-in-net-core-mvc)
 62. [Ep 75 - Remote Validation in .Net Core MVC](#ep-75---remote-validation-in-net-core-mvc)
 63. [Ep 76 - Custom Validation Attribute in .Net Core MVC](#ep-76---custom-validation-attribute-in-net-core-mvc)
-64. [Ep 77 - Extend IdentityUser in .Net Core MVC](#ep-77---extend-identityuser-attribute-in-net-core-mvc)
+64. [Ep 77 - Extend IdentityUser in .Net Core MVC](#ep-77---extend-identityuser-in-net-core-mvc)
+65. [Ep 78 - Creating Roles in .Net Core MVC](#ep-78---creating-roles-in-net-core-mvc)
 
  
 ## Notes
@@ -5423,6 +5424,7 @@ public async Task<IActionResult> Register(RegisterViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 78 - [Creating Roles in .Net Core MVC](https://www.youtube.com/watch?v=TuJd2Ez9i3I&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=78)
 
 
 
@@ -5436,6 +5438,7 @@ public async Task<IActionResult> Register(RegisterViewModel model)
 
 
 
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
