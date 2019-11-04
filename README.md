@@ -5426,17 +5426,114 @@ public async Task<IActionResult> Register(RegisterViewModel model)
 
 ### Ep 78 - [Creating Roles in .Net Core MVC](https://www.youtube.com/watch?v=TuJd2Ez9i3I&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=78)
 
+**RoleManager in ASP.NET Core**
 
+- To create a user in asp.net core we use `UserManager` class. Similarly, to create a role, we use `RoleManager` class provided by asp.net core
+- The built-in `IdentityRole` class represents a Role
+- `RoleManager` class performs all the CRUD operations i.e Creating, Reading, Updating and Deleting roles from the underlying database table AspNetRoles
+- To tell the RoleManager class to work with `IdentityRole` class, we specify `IdentityRole` class as the generic argument to `RoleManager` 
+- `RoleManager` is made available to any controller or view by asp.net core dependency injection system
 
+```C#
+public class AdministrationController : Controller
+{
+    private readonly RoleManager<IdentityRole> _roleManager;
 
+    public AdministrationController(RoleManager<IdentityRole> roleManager)
+    {
+        _roleManager = roleManager;
+    }
+}
+```
 
+Controller code to create a new role
 
+```C#
+using DotNetCoreTutorialJourney.ViewModels;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
+namespace DotNetCoreTutorialJourney.Controllers
+{
+    public class AdministrationController : Controller
+    {
+        private readonly RoleManager<IdentityRole> _roleManager;
 
+        public AdministrationController(RoleManager<IdentityRole> roleManager)
+        {
+            _roleManager = roleManager;
+        }
 
+        [HttpGet]
+        public ViewResult CreateRole()
+        {
+            return View();
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateRole(CreateRoleViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                IdentityRole identityRole = new IdentityRole { Name = model.RoleName };
+                IdentityResult result = await _roleManager.CreateAsync(identityRole);
 
+                if (result.Succeeded)
+                    return RedirectToAction("index", "home");
 
+                foreach (IdentityError error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+            return View(model);
+        }
+    }
+}
+```
+
+Create Role View Model 
+
+```C#
+using System.ComponentModel.DataAnnotations;
+
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class CreateRoleViewModel
+    {
+        [Required]
+        [Display(Name = "Role")]
+        public string RoleName { get; set; }
+    }
+}
+```
+
+Create Role View
+
+```HTML
+@model CreateRoleViewModel
+
+@{
+    ViewBag.Title = "Create New Role";
+}
+
+<h1>Create New Role</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <form method="post" autocomplete="off">
+            <div class="form-group">
+                <label asp-for="RoleName"></label>
+                <input asp-for="RoleName" class="form-control" />
+                <span asp-validation-for="RoleName" class="text-danger"></span>
+            </div>
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <button type="submit" class="btn btn-primary" style="width: auto">Create Role</button>
+        </form>
+    </div>
+</div>
+```
 
 #### [Back to Table of Contents](#table-of-contents)
 
