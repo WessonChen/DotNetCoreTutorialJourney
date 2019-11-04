@@ -1,4 +1,5 @@
 ﻿using DotNetCoreTutorialJourney.Models;
+using DotNetCoreTutorialJourney.Utilities;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
@@ -20,5 +21,9 @@ namespace DotNetCoreTutorialJourney.ViewModels
         [Required]
         public Dept? Department { get; set; }
         public IFormFile Photo { get; set; }
+        [AGreaterThanBC("B", "C", ErrorMessage = "It should be b+c")]
+        public int? A { get; set; }
+        public int? B { get; set; }
+        public int? C { get; set; }
     }
 }

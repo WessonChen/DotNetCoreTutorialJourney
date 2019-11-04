@@ -68,6 +68,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 60. [Ep 73 - Open redirect vulnerability example](#ep-73---open-redirect-vulnerability-example)
 61. [Ep 74 - Client Side Validation in .Net Core MVC](#ep-74---client-side-validation-in-net-core-mvc)
 62. [Ep 75 - Remote Validation in .Net Core MVC](#ep-75---remote-validation-in-net-core-mvc)
+63. [Ep 76 - Custom Validation Attribute in .Net Core MVC](#ep-76---custom-validation-attribute-in-net-core-mvc)
 
  
 ## Notes
@@ -5263,19 +5264,67 @@ public class RegisterViewModel
 }
 ```
 
+The following 3 client-side libraries are required in the order specified for the remote validation to work. 
+If any of them are missing or not loaded in the order specified, remote validation will not work. 
+- jquery.js
+- jquery.validate.js
+- jquery.validate.unobtrusive.js
+
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 76 - [Custom Validation Attribute in .Net Core MVC](https://www.youtube.com/watch?v=o_AH2MGti0A&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=76)
 
+**Custom Attribute**
 
+If you have a complex validation requirement that you cannot implement using the built-in attributes, 
+you can create a custom validation attribute and reuse it in your project or even in multiple projects 
+if you create it in a separate class library project. 
 
+```C#
+public class EmployeeCreateViewModel
+{
+	AGreaterThanBC("B", "C", ErrorMessage = "It should be b+c")]
+    public int? A { get; set; }
+    public int? B { get; set; }
+    public int? C { get; set; }
+}
+```
 
+```C#
+using System.ComponentModel.DataAnnotations;
 
+namespace DotNetCoreTutorialJourney.Utilities
+{
+    public class AGreaterThanBCAttribute : ValidationAttribute
+    {
+        private readonly string _b;
+        private readonly string _c;
 
+        public AGreaterThanBCAttribute(string b, string c)
+        {
+            _b = b;
+            _c = c;
+        }
 
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            ErrorMessage = ErrorMessageString;
 
+            var currentValue = value ?? 0;
+            var comparingB = validationContext.ObjectType.GetProperty(_b);
+            var comparingC = validationContext.ObjectType.GetProperty(_c);
+            var comparisonValueB = comparingB.GetValue(validationContext.ObjectInstance) ?? 0;
+            var comparisonValueC = comparingC.GetValue(validationContext.ObjectInstance) ?? 0;
 
+            if ((int)currentValue != (int)comparisonValueB + (int)comparisonValueC)
+                return new ValidationResult(ErrorMessage);
+            return ValidationResult.Success;
+        }
+    }
+}
+```
 
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
