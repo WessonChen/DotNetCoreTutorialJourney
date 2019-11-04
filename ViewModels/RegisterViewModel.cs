@@ -19,5 +19,6 @@ namespace DotNetCoreTutorialJourney.ViewModels
         [Compare("Password",
             ErrorMessage = "Password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+        public string Gender { get; set; }
     }
 }

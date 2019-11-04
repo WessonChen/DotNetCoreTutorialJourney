@@ -69,6 +69,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 61. [Ep 74 - Client Side Validation in .Net Core MVC](#ep-74---client-side-validation-in-net-core-mvc)
 62. [Ep 75 - Remote Validation in .Net Core MVC](#ep-75---remote-validation-in-net-core-mvc)
 63. [Ep 76 - Custom Validation Attribute in .Net Core MVC](#ep-76---custom-validation-attribute-in-net-core-mvc)
+64. [Ep 77 - Extend IdentityUser in .Net Core MVC](#ep-77---extend-identityuser-attribute-in-net-core-mvc)
 
  
 ## Notes
@@ -5283,7 +5284,7 @@ if you create it in a separate class library project.
 ```C#
 public class EmployeeCreateViewModel
 {
-	AGreaterThanBC("B", "C", ErrorMessage = "It should be b+c")]
+    [AGreaterThanBC("B", "C", ErrorMessage = "It should be b+c")]
     public int? A { get; set; }
     public int? B { get; set; }
     public int? C { get; set; }
@@ -5326,22 +5327,101 @@ namespace DotNetCoreTutorialJourney.Utilities
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 77 - [Extend IdentityUser in .Net Core MVC](https://www.youtube.com/watch?v=NV734cJdZts&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=77)
 
+```C#
+using Microsoft.AspNetCore.Identity;
 
+namespace DotNetCoreTutorialJourney.Models
+{
+    public class AppUser : IdentityUser
+    {
+        public string Gender { get; set; }
+    }
+}
+```
 
+Find all references of `IdentityUser` class and replace it with our custom `AppUser` class. 
+The easiest way to do this is to, right click on the `IdentityUser` class and then select **"Find All References"** from the context menu.
 
+Specify `AppUser` class as the generic argument for the `IdentityDbContext` class in "AppDbContext.cs"
 
+```C#
+namespace DotNetCoreTutorialJourney.Models
+{
+    public class AppDbContext : IdentityDbContext<AppUser>
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+        {
+        }
 
+        public DbSet<Employee> Employees { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Seed();
+        }
+    }
+}
+```
 
+Generate a new migration
 
+> Add-Migration Extend_IdentityUser
 
+Next, apply the migration to the database
 
+> Update-Database
 
+RegisterViewModel class
 
+```C#
+public class RegisterViewModel
+{
+    // Other Properties
 
+    public string Gender { get; set; }
+}
+```
 
+Register View 
 
+```HTML
+<div class="form-group">
+    <label asp-for="City"></label>
+    <input asp-for="City" class="form-control" />
+</div>
+```
 
+AccountController - Register action 
+
+```C#
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> Register(RegisterViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var user = new AppUser { UserName = model.Email, Email = model.Email, Gender = model.Gender};
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        if (result.Succeeded)
+        {
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            return RedirectToAction("index", "home");
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+    }
+    return View(model);
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
