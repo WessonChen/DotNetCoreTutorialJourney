@@ -72,6 +72,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 64. [Ep 77 - Extend IdentityUser in .Net Core MVC](#ep-77---extend-identityuser-in-net-core-mvc)
 65. [Ep 78 - Creating Roles in .Net Core MVC](#ep-78---creating-roles-in-net-core-mvc)
 66. [Ep 79 - Get List of Roles in .Net Core MVC](#ep-79---get-list-of-roles-in-net-core-mvc)
+67. [Ep 80 - Edit Role in .Net Core MVC](#ep-80---edit-role-in-net-core-mvc)
 
  
 ## Notes
@@ -5583,17 +5584,180 @@ else
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 80 - [Edit Role in .Net Core MVC](https://www.youtube.com/watch?v=7ikyZk5fGzk&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=80)
 
+When **Edit** button on one of the roles is clicked, we want to go to `EditRole` action in the `AdministrationController`. 
+We are using `asp-action` and `asp-controller` tag helpers to do that. 
+We also want to pass the `ID` of the role to edit. We pass the Role ID using `asp-route-id` tag helper.
 
+```HTML
+<a asp-controller="Administration" asp-action="EditRole"
+   asp-route-id="@role.Id" class="btn btn-primary">
+    Edit
+</a>
+```
 
+`asp-route-id` tag helper includes the Role ID in the URL  
+> /Administration/EditRole/7360350f-2662-4842-8a78-58a308043477
 
+**Edit Role View Model**
 
+The constructor initializes `Users` property so we do not get **NULL reference** exceptions. 
 
+```C#
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
+namespace EmployeeManagement.ViewModels
+{
+    public class EditRoleViewModel
+    {
+        public EditRoleViewModel()
+        {
+            Users = new List<string>();
+        }
 
+        public string Id { get; set; }
 
+        [Required(ErrorMessage = "Role Name is required")]
+        public string RoleName { get; set; }
 
+        public List<string> Users { get; set; }
+    }
+}
+```
 
+**Edit Role Action Methods**
+
+```C#
+// Role ID is passed from the URL to the action
+[HttpGet]
+public async Task<IActionResult> EditRole(string id)
+{
+    // Find the role by Role ID
+    var role = await roleManager.FindByIdAsync(id);
+
+    if (role == null)
+    {
+        ViewBag.ErrorMessage = $"Role with Id = {id} cannot be found";
+        return View("NotFound");
+    }
+
+    var model = new EditRoleViewModel
+    {
+        Id = role.Id,
+        RoleName = role.Name
+    };
+
+    // Retrieve all the Users
+    foreach (var user in userManager.Users)
+    {
+        // If the user is in this role, add the username to
+        // Users property of EditRoleViewModel. This model
+        // object is then passed to the view for display
+        if (await userManager.IsInRoleAsync(user, role.Name))
+        {
+            model.Users.Add(user.UserName);
+        }
+    }
+
+    return View(model);
+}
+
+// This action responds to HttpPost and receives EditRoleViewModel
+[HttpPost]
+public async Task<IActionResult> EditRole(EditRoleViewModel model)
+{
+    var role = await roleManager.FindByIdAsync(model.Id);
+
+    if (role == null)
+    {
+        ViewBag.ErrorMessage = $"Role with Id = {model.Id} cannot be found";
+        return View("NotFound");
+    }
+    else
+    {
+        role.Name = model.RoleName;
+
+        // Update the Role using UpdateAsync
+        var result = await roleManager.UpdateAsync(role);
+
+        if (result.Succeeded)
+        {
+            return RedirectToAction("ListRoles");
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError("", error.Description);
+        }
+
+        return View(model);
+    }
+}
+```
+
+**Edit Role View**
+
+```HTML
+@model EditRoleViewModel
+
+@{
+    ViewBag.Title = "Edit Role";
+}
+
+<h1>Edit Role</h1>
+
+<form method="post" class="mt-3" autocomplete="off">
+    <div class="form-group row">
+        <label asp-for="Id" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Id" disabled class="form-control">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="RoleName" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="RoleName" class="form-control">
+            <span asp-validation-for="RoleName" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group row">
+        <div class="col-sm-10">
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a asp-action="ListRoles" class="btn btn-primary">Cancel</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Users in this role</h3>
+        </div>
+        <div class="card-body">
+            @if (Model.Users.Any())
+            {
+                foreach (var user in Model.Users)
+                {
+                    <h5 class="card-title">@user</h5>
+                }
+            }
+            else
+            {
+                <h5 class="card-title">None at the moment</h5>
+            }
+        </div>
+        <div class="card-footer">
+            <a href="#" class="btn btn-primary" style="width:auto">Add Users</a>
+            <a href="#" class="btn btn-primary" style="width:auto">Remove Users</a>
+        </div>
+    </div>
+</form>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
