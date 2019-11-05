@@ -71,6 +71,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 63. [Ep 76 - Custom Validation Attribute in .Net Core MVC](#ep-76---custom-validation-attribute-in-net-core-mvc)
 64. [Ep 77 - Extend IdentityUser in .Net Core MVC](#ep-77---extend-identityuser-in-net-core-mvc)
 65. [Ep 78 - Creating Roles in .Net Core MVC](#ep-78---creating-roles-in-net-core-mvc)
+66. [Ep 79 - Get List of Roles in .Net Core MVC](#ep-79---get-list-of-roles-in-net-core-mvc)
 
  
 ## Notes
@@ -5537,23 +5538,50 @@ Create Role View
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 79 - [Get List of Roles in .Net Core MVC](https://www.youtube.com/watch?v=KGIT8P29jf4&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=79)
 
+**Roles** property of `RoleManager` class returns the list of all `IdentityRole` objects
 
+```C#
+[HttpGet]
+public ViewResult ListRoles()
+{
+    var roles = _roleManager.Roles;
+    return View(roles);
+}
+```
 
+**List Roles View**
 
+- **ID** property of the `IdentityRole` object returns the role ID
+- **Name** property of the `IdentityRole` object returns the role Name
 
+```HTML
+@model IEnumerable<IdentityRole>
 
+@if (Model.Any())
+{
+    foreach (var role in Model)
+    {
+        <div>
+            Role Id : @role.Id
+        </div>
+        <div>
+            <h5>@role.Name</h5>
+        </div>
+    }
+}
+else
+{
+    <div>
+        <a asp-controller="administration" asp-action="CreateRole">
+            Create Role
+        </a>
+    </div>
+}
+```
 
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

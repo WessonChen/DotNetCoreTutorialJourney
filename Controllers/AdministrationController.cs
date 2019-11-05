@@ -29,7 +29,7 @@ namespace DotNetCoreTutorialJourney.Controllers
                 IdentityResult result = await _roleManager.CreateAsync(identityRole);
 
                 if (result.Succeeded)
-                    return RedirectToAction("index", "home");
+                    return RedirectToAction("listRoles", "administration");
 
                 foreach (IdentityError error in result.Errors)
                 {
@@ -37,6 +37,13 @@ namespace DotNetCoreTutorialJourney.Controllers
                 }
             }
             return View(model);
+        }
+
+        [HttpGet]
+        public ViewResult ListRoles()
+        {
+            var roles = _roleManager.Roles;
+            return View(roles);
         }
     }
 }
