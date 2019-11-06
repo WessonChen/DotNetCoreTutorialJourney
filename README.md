@@ -79,6 +79,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 71. [Ep 84 - Get List of Users in .Net Core MVC](#ep-84---get-list-of-users-in-net-core-mvc)
 72. [Ep 85 - Edit Users in .Net Core MVC](#ep-85---edit-users-in-net-core-mvc)
 73. [Ep 86 - Delete Users in .Net Core MVC](#ep-86---delete-users-in-net-core-mvc)
+74. [Ep 87 - Delete Confirmation in .Net Core MVC](#ep-86---delete-users-in-net-core-mvc)
 
  
 ## Notes
@@ -6348,7 +6349,7 @@ Deleting data using a **GET** request is **not** recommended.
 Just imagine what can happen if there is an image tag in a malicious email as shown below. The moment we open the email, 
 the image tries to load and issues a GET request, which would delete the data. 
 
-<img src="http://localhost/Administration/DeleteUser/123" />
+> `<img src="http://localhost/Administration/DeleteUser/123" />`
 
 
 Also, when search engines index your page, they issue a GET request which would delete the data. 
@@ -6393,19 +6394,64 @@ public async Task<IActionResult> DeleteUser(string id)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 87 - [Delete Confirmation in .Net Core MVC](https://www.youtube.com/watch?v=hKLjt9GzYM8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=87)
 
+**Using dialog popup**
 
+```HTML
+<button type="submit" class="btn btn-danger"
+        onclick="return confirm('Are you sure you want to delete user : @user.UserName')">
+    Delete
+</button>
+```
 
+**Using span**
 
+<p align="center">
+  <img src="https://i.ibb.co/5nywW6d/asp-net-core-mvc-delete-confirmation.png">
+</p>
 
+To ensure these span elements have unique ID's we are appending User.Id which is a Guid and guaranteed to be unique
 
+```HTML
+<div class="card-footer">
+    <form method="post" asp-action="DeleteUser" asp-route-id="@user.Id">
+        <a asp-controller="Administration" asp-action="Edituser"
+            asp-route-id="@user.Id" class="btn btn-primary">Edit</a>
 
+        <span id="confirmDeleteSpan_@user.Id" style="display:none">
+            <span>Are you sure you want to delete?</span>
+            <button type="submit" class="btn btn-danger">Yes</button>
+            <a href="#" class="btn btn-primary"
+                onclick="confirmDelete('@user.Id', false)">No</a>
+        </span>
 
+        <span id="deleteSpan_@user.Id">
+            <a href="#" class="btn btn-danger"
+                onclick="confirmDelete('@user.Id', true)">Delete</a>
+        </span>
+    </form>
+</div>
+```
 
+**ConfirmDelete JavaScript function**
 
+```JavaScript
+function confirmDelete(uniqueId, isDeleteClicked) {
+    var deleteSpan = 'deleteSpan_' + uniqueId;
+    var confirmDeleteSpan = 'confirmDeleteSpan_' + uniqueId;
 
+    if (isDeleteClicked) {
+        $('#' + deleteSpan).hide();
+        $('#' + confirmDeleteSpan).show();
+    } else {
+        $('#' + deleteSpan).show();
+        $('#' + confirmDeleteSpan).hide();
+    }
+}
+```
 
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
