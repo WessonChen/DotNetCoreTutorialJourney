@@ -74,6 +74,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 66. [Ep 79 - Get List of Roles in .Net Core MVC](#ep-79---get-list-of-roles-in-net-core-mvc)
 67. [Ep 80 - Edit Role in .Net Core MVC](#ep-80---edit-role-in-net-core-mvc)
 68. [Ep 81 - Add or Remove Users from Role in .Net Core MVC](#ep-81---add-or-remove-users-from-role-in-net-core-mvc)
+69. [Ep 82 - Role Based Authorization in .Net Core MVC](#ep-82---role-based-authorization-in-net-core-mvc)
 
  
 ## Notes
@@ -5907,7 +5908,43 @@ public async Task<IActionResult> EditUsersInRole(List<UserRoleViewModel> model, 
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 82 - [Role Based Authorization in .Net Core MVC](https://www.youtube.com/watch?v=DXVe6skc42k&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=82)
 
+**Role Based Authorization Example**
+
+Only those users who are members of the Administrator role can access the actions in the AdministrationController 
+
+```C#
+[Authorize(Roles = "Administrator")]
+public class AdministrationController : Controller
+{
+}
+```
+
+**Multiple Roles Example**
+
+Multiple roles can be specified by separating them with a comma. The actions in this controller are accessible only to those users who are members of either Administrator or User role. 
+
+```C#
+[Authorize(Roles = "Administrator,User")]
+public class AdministrationController : Controller
+{
+}
+```
+
+**Multiple Instances of Authorize Attribute**
+
+To be able to access the actions in this controller, users have to be members of **both** - the Administrator role and the User role. 
+
+```C#
+[Authorize(Roles = "Administrator")]
+[Authorize(Roles = "User")]
+public class AdministrationController : Controller
+{
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

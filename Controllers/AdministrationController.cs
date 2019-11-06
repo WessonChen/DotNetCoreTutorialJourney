@@ -1,5 +1,6 @@
 ﻿using DotNetCoreTutorialJourney.Models;
 using DotNetCoreTutorialJourney.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace DotNetCoreTutorialJourney.Controllers
 {
+    [Authorize(Roles = "Administrator")]
     public class AdministrationController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;
