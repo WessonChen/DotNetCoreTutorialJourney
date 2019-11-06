@@ -75,6 +75,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 67. [Ep 80 - Edit Role in .Net Core MVC](#ep-80---edit-role-in-net-core-mvc)
 68. [Ep 81 - Add or Remove Users from Role in .Net Core MVC](#ep-81---add-or-remove-users-from-role-in-net-core-mvc)
 69. [Ep 82 - Role Based Authorization in .Net Core MVC](#ep-82---role-based-authorization-in-net-core-mvc)
+70. [Ep 83 - Role Based Navigation Menu in .Net Core MVC](#ep-83---role-based-navigation-menu-in-net-core-mvc)
 
  
 ## Notes
@@ -5946,22 +5947,60 @@ public class AdministrationController : Controller
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 83 - [Role Based Navigation Menu in .Net Core MVC](https://www.youtube.com/watch?v=IPjK65ehQBg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=83)
 
+- Inject `SignInManager` service into the layout view using `@inject` directive
+- Use the `SignInManager` service, `IsSignedIn()` method and `IsInRole()` method to check if the user is signed in and if the user is in the Admin role
 
+```HTML
+@inject SignInManager<AppUser> _signinmanager;
 
+<ul class="navbar-nav">
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="home" asp-action="index">List</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="home" asp-action="create">Create</a>
+    </li>
+    @if (_signinmanager.IsSignedIn(User) && User.IsInRole("Admin"))
+    {
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Administration" asp-action="ListRoles">
+                Manage Roles
+            </a>
+        </li>
+    }
+</ul>
+```
 
+If the logged-in user is **not** in Admin role, asp.net core automatically **redirects** the user to `/Account/AccessDenied`. 
 
+```C#
+public class AccountController : Controller
+{
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
 
+    // Other actions
+}
+```
 
+```HTML
+@{
+    ViewBag.Title = "AccessDenied";
+}
 
+<div class="text-center">
+    <h1 class="text-danger">Access Denied</h1>
+    <h6 class="text-danger">You do not have persmission to view this resource</h6>
+</div>
+```
 
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

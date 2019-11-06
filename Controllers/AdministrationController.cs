@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DotNetCoreTutorialJourney.Controllers
 {
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "Admin")]
     public class AdministrationController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;

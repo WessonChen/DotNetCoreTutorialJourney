@@ -20,6 +20,13 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        [HttpGet]
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> IsEmailInUse(string email) => Json(await _userManager.FindByEmailAsync(email) == null ? "true" : $"Email {email} is already in use.");
