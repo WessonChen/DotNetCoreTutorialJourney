@@ -81,6 +81,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 73. [Ep 86 - Delete Users in .Net Core MVC](#ep-86---delete-users-in-net-core-mvc)
 74. [Ep 87 - Delete Confirmation in .Net Core MVC](#ep-87---delete-confirmation-in-net-core-mvc)
 75. [Ep 88 - Delete Roles in .Net Core MVC](#ep-88---delete-roles-in-net-core-mvc)
+76. [Ep 89 - Enforce ON DELETE NO ACTION in EF Core](#ep-89---enforce-on-delete-no-action-in-ef-core)
 
  
 ## Notes
@@ -6513,25 +6514,58 @@ public async Task<IActionResult> DeleteRole(string id)
 }
 ```
 
-**Notice that, when delete a role, all relationship depends on that role will be deleated as well**.
+**Notice that, when delete a role, all relationship depends on that role will be deleated by EF Core by default**.
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 89 - [Enforce ON DELETE NO ACTION in EF Core](https://www.youtube.com/watch?v=txTZAFut9mA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=89)
 
+<p align="center">
+  <img src="https://i.ibb.co/5Fz4rRx/on-delete-no-action-entity-framework-core.png">
+</p>
 
+**Cascading referential integrity constraint**
 
+**Cascading referential integrity constraint** allows to define the actions Microsoft SQL Server should take 
+when a user attempts to delete or update a key to which an existing foreign keys points. 
 
+**Foreign key with Cascade DELETE**
 
+In Entity Framework Core, by default the foreign keys in `AspNetUserRoles` table have Cascade DELETE behaviour. This means, 
+if a record in the parent table (`AspNetRoles`) is deleted, then the corresponding records in the child table (`AspNetUserRoles`) are automatically be deleted. 
 
+**Foreign key with NO ACTION ON DELETE**
 
+What if you want to customise this default behaviour. We do not want to allow a role to be deleted, 
+if there are rows in the child table (`AspNetUserRoles`) which point to a role in the parent table (`AspNetRoles`). 
 
+To achieve this, modify foreign keys `DeleteBehavior` to `Restrict`. We do this in `OnModelCreating()` method of `AppDbContext` class 
 
+```C#
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    base.OnModelCreating(modelBuilder);
 
+    foreach (var foreignKey in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+    {
+        foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
+    }
+}
+```
 
+Build the solution. Add a new migration and update the database. 
 
+With this change, if you view the properties of the foreign key you will see ON DELETE is set to NO ACTION 
 
+<p align="center">
+  <img src="https://i.ibb.co/QptKz0N/asp-net-core-on-delete-no-action.png">
+</p>
 
+At this point, an error will be thrown, if you try to delete a role from `AspNetRoles` table, 
+for which there are child rows in `AspNetUserRoles` table and the `DELETE` action will be **rolled back**. 
+You have to delete the CHILD rows before deleting the parent row. 
 
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
