@@ -73,6 +73,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 65. [Ep 78 - Creating Roles in .Net Core MVC](#ep-78---creating-roles-in-net-core-mvc)
 66. [Ep 79 - Get List of Roles in .Net Core MVC](#ep-79---get-list-of-roles-in-net-core-mvc)
 67. [Ep 80 - Edit Role in .Net Core MVC](#ep-80---edit-role-in-net-core-mvc)
+68. [Ep 81 - Add or Remove Users from Role in .Net Core MVC](#ep-81---add-or-remove-users-from-role-in-net-core-mvc)
 
  
 ## Notes
@@ -5759,27 +5760,152 @@ public async Task<IActionResult> EditRole(EditRoleViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 81 - [Add or Remove Users from Role in .Net Core MVC](https://www.youtube.com/watch?v=TzhqymQm5kw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=81)
 
+**AspNetUserRoles identity database table**
 
+Application users are stored in `AspNetUsers` database table, where as roles are stored in `AspNetRoles` table.
 
+There is a **Many-to-Many** relationship between `AspNetUsers` and `AspNetRoles` table. 
+A user can be a member of many roles and a role can contain many users as it's members. This User and Role mapping data is stored in `AspNetUserRoles` table. 
 
+**UserRoleViewModel Class**
 
+```C#
+public class UserRoleViewModel
+{
+    public string UserId { get; set; }
+    public string UserName { get; set; }
+    public bool IsSelected { get; set; }
+}
+```
 
+We could include `RoleId` property also in the `UserRoleViewModel` class, but as far as this view is concerned, 
+there is a **one-to-many** relationship from `Role` to `Users`. So, in order not to repeat `RoleId` for each User, 
+we will use `ViewBag` to pass `RoleId` from controller to the view.
 
+**EditUsersInRole Actions**
 
+```C#
+[HttpGet]
+public async Task<IActionResult> EditUsersInRole(string roleId)
+{
+    ViewBag.roleId = roleId;
 
+    var role = await _roleManager.FindByIdAsync(roleId);
 
+    if (role == null)
+    {
+        ViewBag.ErrorMessage = $"Role with Id = {roleId} cannot be found";
+        return View("NotFound");
+    }
 
+    var model = new List<UserRoleViewModel>();
 
+    foreach (var user in _userManager.Users)
+    {
+        var userRoleViewModel = new UserRoleViewModel
+        {
+            UserId = user.Id,
+            UserName = user.UserName
+        };
 
+        if (await _userManager.IsInRoleAsync(user, role.Name))
+        {
+            userRoleViewModel.IsSelected = true;
+        }
+        else
+        {
+            userRoleViewModel.IsSelected = false;
+        }
 
+        model.Add(userRoleViewModel);
+    }
 
+    return View(model);
+}
 
+[HttpPost]
+public async Task<IActionResult> EditUsersInRole(List<UserRoleViewModel> model, string roleId)
+{
+    var role = await _roleManager.FindByIdAsync(roleId);
 
+    if (role == null)
+    {
+        ViewBag.ErrorMessage = $"Role with Id = {roleId} cannot be found";
+        return View("NotFound");
+    }
 
+    for (int i = 0; i < model.Count; i++)
+    {
+        var user = await _userManager.FindByIdAsync(model[i].UserId);
 
+        IdentityResult result = null;
 
+        if (model[i].IsSelected && !(await _userManager.IsInRoleAsync(user, role.Name)))
+        {
+            result = await _userManager.AddToRoleAsync(user, role.Name);
+        }
+        else if (!model[i].IsSelected && await _userManager.IsInRoleAsync(user, role.Name))
+        {
+            result = await _userManager.RemoveFromRoleAsync(user, role.Name);
+        }
+        else
+        {
+            continue;
+        }
 
+        if (result.Succeeded)
+        {
+            if (i < (model.Count - 1))
+                continue;
+            else
+                return RedirectToAction("EditRole", new { Id = roleId });
+        }
+    }
+
+    return RedirectToAction("EditRole", new { Id = roleId });
+}
+```
+
+**EditUsersInRole View**
+
+```HTML
+@model List<UserRoleViewModel>
+
+@{
+    var roleId = ViewBag.roleId;
+}
+
+<form method="post" autocomplete="off">
+    <div class="card">
+        <div class="card-header">
+            <h2>Add or remove users from this role</h2>
+        </div>
+        <div class="card-body">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <div class="form-check m-1">
+                    <input type="hidden" asp-for="@Model[i].UserId" />
+                    <input type="hidden" asp-for="@Model[i].UserName" />
+                    <input asp-for="@Model[i].IsSelected" class="form-check-input" />
+                    <label class="form-check-label" asp-for="@Model[i].IsSelected">
+                        @Model[i].UserName
+                    </label>
+                </div>
+            }
+        </div>
+        <div class="card-footer">
+            <input type="submit" value="Update" class="btn btn-primary"
+                   style="width:auto" />
+            <a asp-action="EditRole" asp-route-id="@roleId"
+               class="btn btn-primary" style="width:auto">Cancel</a>
+        </div>
+    </div>
+</form>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
