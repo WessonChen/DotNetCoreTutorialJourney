@@ -82,6 +82,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 74. [Ep 87 - Delete Confirmation in .Net Core MVC](#ep-87---delete-confirmation-in-net-core-mvc)
 75. [Ep 88 - Delete Roles in .Net Core MVC](#ep-88---delete-roles-in-net-core-mvc)
 76. [Ep 89 - Enforce ON DELETE NO ACTION in EF Core](#ep-89---enforce-on-delete-no-action-in-ef-core)
+77. [Ep 91 - Add or Remove Roles from User in .Net Core MVC](#ep-89---enforce-on-delete-no-action-in-ef-core)
 
  
 ## Notes
@@ -6624,9 +6625,140 @@ else
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 91 - [Add or Remove Roles from User in .Net Core MVC](https://www.youtube.com/watch?v=1OaVUy1pRXA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=91)
 
+```HTML
+<div class="card-footer">
+    <a style="width:auto" class="btn btn-primary"
+        asp-action="ManageUserRoles" asp-route-userId="@Model.Id">
+        Manage Roles
+    </a>
+</div>
+```
 
+**UserRolesViewModel Class**
 
+```C#
+public class UserRolesViewModel
+{
+    public string RoleId { get; set; }
+    public string RoleName { get; set; }
+    public bool IsSelected { get; set; }
+}
+```
+
+**ManageUserRoles Actions**
+```C#
+[HttpGet]
+public async Task<IActionResult> ManageUserRoles(string userId)
+{
+    ViewBag.userId = userId;
+
+    var user = await _userManager.FindByIdAsync(userId);
+
+    if (user == null)
+    {
+        ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
+        return View("NotFound");
+    }
+
+    var model = new List<UserRolesViewModel>();
+
+    foreach (var role in _roleManager.Roles)
+    {
+        var userRolesViewModel = new UserRolesViewModel
+        {
+            RoleId = role.Id,
+            RoleName = role.Name
+        };
+
+        if (await _userManager.IsInRoleAsync(user, role.Name))
+        {
+            userRolesViewModel.IsSelected = true;
+        }
+        else
+        {
+            userRolesViewModel.IsSelected = false;
+        }
+
+        model.Add(userRolesViewModel);
+    }
+
+    return View(model);
+}
+
+[HttpPost]
+public async Task<IActionResult> ManageUserRoles(List<UserRolesViewModel> model, string userId)
+{
+    var user = await _userManager.FindByIdAsync(userId);
+
+    if (user == null)
+    {
+        ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
+        return View("NotFound");
+    }
+
+    var roles = await _userManager.GetRolesAsync(user);
+    var result = await _userManager.RemoveFromRolesAsync(user, roles);
+
+    if (!result.Succeeded)
+    {
+        ModelState.AddModelError("", "Cannot remove user existing roles");
+        return View(model);
+    }
+
+    result = await _userManager.AddToRolesAsync(user,
+        model.Where(x => x.IsSelected).Select(y => y.RoleName));
+
+    if (!result.Succeeded)
+    {
+        ModelState.AddModelError("", "Cannot add selected roles to user");
+        return View(model);
+    }
+
+    return RedirectToAction("EditUser", new { Id = userId });
+}
+```
+
+**ManageUserRoles View**
+
+```HTML
+@model List<UserRolesViewModel>
+
+@{
+    var userId = ViewBag.userId;
+}
+
+<form method="post">
+    <div class="card">
+        <div class="card-header">
+            <h2>Manage User Roles</h2>
+        </div>
+        <div class="card-body">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <div class="form-check m-1">
+                    <input type="hidden" asp-for="@Model[i].RoleId" />
+                    <input type="hidden" asp-for="@Model[i].RoleName" />
+                    <input asp-for="@Model[i].IsSelected" class="form-check-input" />
+                    <label class="form-check-label" asp-for="@Model[i].IsSelected">
+                        @Model[i].RoleName
+                    </label>
+                </div>
+            }
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+        <div class="card-footer">
+            <input type="submit" value="Update" class="btn btn-primary"
+                   style="width:auto" />
+            <a asp-action="EditUser" asp-route-id="@userId"
+               class="btn btn-primary" style="width:auto">Cancel</a>
+        </div>
+    </div>
+</form>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
