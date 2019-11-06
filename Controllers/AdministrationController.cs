@@ -188,5 +188,12 @@ namespace DotNetCoreTutorialJourney.Controllers
             var roles = _roleManager.Roles;
             return View(roles);
         }
+
+        [HttpGet]
+        public IActionResult ListUsers()
+        {
+            var users = _userManager.Users;
+            return View(users);
+        }
     }
 }

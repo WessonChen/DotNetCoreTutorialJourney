@@ -76,6 +76,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 68. [Ep 81 - Add or Remove Users from Role in .Net Core MVC](#ep-81---add-or-remove-users-from-role-in-net-core-mvc)
 69. [Ep 82 - Role Based Authorization in .Net Core MVC](#ep-82---role-based-authorization-in-net-core-mvc)
 70. [Ep 83 - Role Based Navigation Menu in .Net Core MVC](#ep-83---role-based-navigation-menu-in-net-core-mvc)
+71. [Ep 84 - Get List of Users in .Net Core MVC](#ep-84---get-list-of-users-in-net-core-mvc)
 
  
 ## Notes
@@ -6002,18 +6003,132 @@ public class AccountController : Controller
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 84 - [Get List of Users in .Net Core MVC](https://www.youtube.com/watch?v=OMX0UiLpMSA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=84)
 
+```C#
+[Authorize(Roles = "Admin")]
+public class AdministrationController : Controller
+{
+    [HttpGet]
+    public IActionResult ListUsers()
+    {
+        var users = _userManager.Users;
+        return View(users);
+    }
+}
+```
 
+**List users view***
 
+```HTML
+@model IEnumerable<AppUser>
 
+@{
+    ViewBag.Title = "All Users";
+}
 
+<h1>All Users</h1>
 
+@if (Model.Any())
+{
+    <a asp-action="Register" asp-controller="Account"
+       class="btn btn-primary mb-3" style="width:auto">
+        Add new user
+    </a>
 
+    foreach (var user in Model)
+    {
+        <div class="card mb-3">
+            <div class="card-header">
+                User Id : @user.Id
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">@user.UserName</h5>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-danger">Edit</a>
+                <a href="#" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            No users created yet
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">
+                Use the button below to create a user
+            </h5>
+            <a class="btn btn-primary" style="width:auto"
+               asp-controller="Account" asp-action="Register">
+                Add new user
+            </a>
+        </div>
+    </div>
+}
+```
 
+- In the navigation menu we want to display Manage dropdown menu
+- It should contain 2 options - Users and Roles
+- This dropdown menu should only be displayed if the user is signed-in and in the Admin role
+- We are using Bootstrap 4 for the navigation menu
 
+```HTML
+@if (_signinmanager.IsSignedIn(User) && User.IsInRole("Admin"))
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Manage
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" asp-controller="Administration"
+                asp-action="ListRoles">Roles</a>
+            <a class="dropdown-item" asp-controller="Administration"
+                asp-action="ListUsers">Users</a>
+        </div>
+    </li>
+}
+```
 
+**Change in Account Controller**
 
+We were redirecting registeration to auto-sign-in. Now we need conditions for that 
 
+```C#
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> Register(RegisterViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var user = new AppUser { UserName = model.Email, Email = model.Email, Gender = model.Gender};
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        if (result.Succeeded)
+        {
+		    //The added condition is here
+            if (_signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+            {
+                return RedirectToAction("ListUsers", "Administration");
+            }
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            return RedirectToAction("index", "home");
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+    }
+    return View(model);
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
