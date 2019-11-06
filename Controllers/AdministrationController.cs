@@ -3,6 +3,8 @@ using DotNetCoreTutorialJourney.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,12 +16,15 @@ namespace DotNetCoreTutorialJourney.Controllers
     {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<AppUser> _userManager;
+        private readonly ILogger<AdministrationController> _logger;
 
         public AdministrationController(RoleManager<IdentityRole> roleManager,
-                                        UserManager<AppUser> userManager)
+                                        UserManager<AppUser> userManager, 
+                                        ILogger<AdministrationController> logger)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -57,7 +62,7 @@ namespace DotNetCoreTutorialJourney.Controllers
                 ViewBag.ErrorMessage = $"Role with Id = {id} cannot be found";
                 return View("NotFound");
             }
-            else
+            try
             {
                 var result = await _roleManager.DeleteAsync(role);
 
@@ -72,6 +77,14 @@ namespace DotNetCoreTutorialJourney.Controllers
                 }
 
                 return View("ListRoles");
+            }
+            catch (DbUpdateException e)
+            {
+                _logger.LogError($"Exception Occured : {e}");
+                ViewBag.ErrorTitle = $"{role.Name} role is in use";
+                ViewBag.ErrorMessage = $"{role.Name} role cannot be deleted as there are users in this role. " +
+                    $"If you want to delete this role, please remove the users from the role and then try to delete";
+                return View("Error");
             }
         }
 
