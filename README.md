@@ -82,7 +82,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 74. [Ep 87 - Delete Confirmation in .Net Core MVC](#ep-87---delete-confirmation-in-net-core-mvc)
 75. [Ep 88 - Delete Roles in .Net Core MVC](#ep-88---delete-roles-in-net-core-mvc)
 76. [Ep 89 - Enforce ON DELETE NO ACTION in EF Core](#ep-89---enforce-on-delete-no-action-in-ef-core)
-77. [Ep 91 - Add or Remove Roles from User in .Net Core MVC](#ep-89---enforce-on-delete-no-action-in-ef-core)
+77. [Ep 91 - Add or Remove Roles from User in .Net Core MVC](#ep-91---add-or-remove-roles-from-user-in-net-core-mvc)
 
  
 ## Notes
@@ -6757,6 +6757,8 @@ public async Task<IActionResult> ManageUserRoles(List<UserRolesViewModel> model,
     </div>
 </form>
 ```
+
+**Model binding is not working in `foreach` in the view. Use `for` instead**.
 
 #### [Back to Table of Contents](#table-of-contents)
 
