@@ -77,6 +77,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 69. [Ep 82 - Role Based Authorization in .Net Core MVC](#ep-82---role-based-authorization-in-net-core-mvc)
 70. [Ep 83 - Role Based Navigation Menu in .Net Core MVC](#ep-83---role-based-navigation-menu-in-net-core-mvc)
 71. [Ep 84 - Get List of Users in .Net Core MVC](#ep-84---get-list-of-users-in-net-core-mvc)
+72. [Ep 85 - Edit Users in .Net Core MVC](#ep-85---edit-users-in-net-core-mvc)
 
  
 ## Notes
@@ -6018,7 +6019,7 @@ public class AdministrationController : Controller
 }
 ```
 
-**List users view***
+**List users view**
 
 ```HTML
 @model IEnumerable<AppUser>
@@ -6130,12 +6131,214 @@ public async Task<IActionResult> Register(RegisterViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 85 - [Edit Users in .Net Core MVC](https://www.youtube.com/watch?v=QYlIfH8qyrU&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=85)
 
+**Edit button on List Users View**
 
+```HTML
+<div class="card-footer">
+    <a class="btn btn-primary" 
+        asp-controller="Administration" asp-action="EditUser" asp-route-id="@user.Id">Edit</a>
+    <a href="#" class="btn btn-danger">Delete</a>
+</div>
+```
 
+**Edit User View Model**
 
+```C#
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class EditUserViewModel
+    {
+        public EditUserViewModel()
+        {
+            Claims = new List<string>();
+            Roles = new List<string>();
+        }
 
+        public string Id { get; set; }
+
+        [Required]
+        public string UserName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        public string Gender { get; set; }
+
+        public IList<string> Claims { get; set; }
+
+        public IList<string> Roles { get; set; }
+    }
+}
+```
+
+**EditUser Action**
+
+```C#
+[HttpGet]
+public async Task<IActionResult> EditUser(string id)
+{
+    var user = await _userManager.FindByIdAsync(id);
+
+    if (user == null)
+    {
+        ViewBag.ErrorMessage = $"User with Id = {id} cannot be found";
+        return View("NotFound");
+    }
+
+    // GetClaimsAsync retunrs the list of user Claims
+    var userClaims = await _userManager.GetClaimsAsync(user);
+    // GetRolesAsync returns the list of user Roles
+    var userRoles = await _userManager.GetRolesAsync(user);
+
+    var model = new EditUserViewModel
+    {
+        Id = user.Id,
+        Email = user.Email,
+        UserName = user.UserName,
+        Gender = user.Gender,
+        Claims = userClaims.Select(c => c.Value).ToList(),
+        Roles = userRoles
+    };
+
+    return View(model);
+}
+
+[HttpPost]
+public async Task<IActionResult> EditUser(EditUserViewModel model)
+{
+    var user = await _userManager.FindByIdAsync(model.Id);
+
+    if (user == null)
+    {
+        ViewBag.ErrorMessage = $"User with Id = {model.Id} cannot be found";
+        return View("NotFound");
+    }
+
+    user.Email = model.Email;
+    user.UserName = model.UserName;
+    user.Gender = model.Gender;
+
+    var result = await _userManager.UpdateAsync(user);
+
+    if (result.Succeeded)
+    {
+        return RedirectToAction("ListUsers");
+    }
+
+    foreach (var error in result.Errors)
+    {
+        ModelState.AddModelError("", error.Description);
+    }
+
+    return View(model);
+}
+```
+
+**EditUser View**
+
+```HTML
+@model EditUserViewModel
+
+@{
+    ViewBag.Title = "Edit User";
+}
+
+<h1>Edit User</h1>
+
+<form method="post" class="mt-3" autocomplete="off">
+    <div class="form-group row">
+        <label asp-for="Id" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Id" disabled class="form-control">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="Email" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Email" class="form-control">
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="UserName" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="UserName" class="form-control">
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="Gender" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input asp-for="Gender" class="form-control">
+        </div>
+    </div>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group row">
+        <div class="col-sm-10">
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a asp-action="ListUsers" class="btn btn-primary">Cancel</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>User Roles</h3>
+        </div>
+        <div class="card-body">
+            @if (Model.Roles.Any())
+            {
+                foreach (var role in Model.Roles)
+                {
+                    <h5 class="card-title">@role</h5>
+                }
+            }
+            else
+            {
+                <h5 class="card-title">None at the moment</h5>
+            }
+        </div>
+        <div class="card-footer">
+            <a href="#" style="width:auto" class="btn btn-primary">
+                Manage Roles
+            </a>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3>User Claims</h3>
+        </div>
+        <div class="card-body">
+            @if (Model.Claims.Any())
+            {
+                foreach (var claim in Model.Claims)
+                {
+                    <h5 class="card-title">@claim</h5>
+                }
+            }
+            else
+            {
+                <h5 class="card-title">None at the moment</h5>
+            }
+        </div>
+        <div class="card-footer">
+            <a href="#" style="width:auto" class="btn btn-primary">
+                Manage Claims
+            </a>
+        </div>
+    </div>
+</form>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
