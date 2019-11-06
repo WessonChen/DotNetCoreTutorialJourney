@@ -79,7 +79,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 71. [Ep 84 - Get List of Users in .Net Core MVC](#ep-84---get-list-of-users-in-net-core-mvc)
 72. [Ep 85 - Edit Users in .Net Core MVC](#ep-85---edit-users-in-net-core-mvc)
 73. [Ep 86 - Delete Users in .Net Core MVC](#ep-86---delete-users-in-net-core-mvc)
-74. [Ep 87 - Delete Confirmation in .Net Core MVC](#ep-86---delete-users-in-net-core-mvc)
+74. [Ep 87 - Delete Confirmation in .Net Core MVC](#ep-87---delete-confirmation-in-net-core-mvc)
+75. [Ep 88 - Delete Roles in .Net Core MVC](#ep-88---delete-roles-in-net-core-mvc)
 
  
 ## Notes
@@ -6453,17 +6454,68 @@ function confirmDelete(uniqueId, isDeleteClicked) {
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 88 - [Delete Roles in .Net Core MVC](https://www.youtube.com/watch?v=pj3GCelrIGM&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=88)
 
+```HTML
+<div class="card-footer">
+    <form asp-action="DeleteRole" asp-route-id="@role.Id" method="post">
+        <a class="btn btn-primary"
+            asp-controller="Administration" asp-action="EditRole" asp-route-id="@role.Id">Edit</a>
 
+        <span id="confirmDeleteSpan_@role.Id" style="display:none">
+            <span>Are you sure you want to delete?</span>
+            <button type="submit" class="btn btn-danger">Yes</button>
+            <a href="#" class="btn btn-primary"
+                onclick="confirmDelete('@role.Id', false)">No</a>
+        </span>
 
+        <span id="deleteSpan_@role.Id">
+            <a href="#" class="btn btn-danger"
+                onclick="confirmDelete('@role.Id', true)">Delete</a>
+        </span>
+    </form>
+</div>
+```
 
+```HTML
+@section Scripts {
+    <script src="~/js/main.js"></script>
+}
+```
 
+```C#
+[HttpPost]
+public async Task<IActionResult> DeleteRole(string id)
+{
+    var role = await _roleManager.FindByIdAsync(id);
 
+    if (role == null)
+    {
+        ViewBag.ErrorMessage = $"Role with Id = {id} cannot be found";
+        return View("NotFound");
+    }
+    else
+    {
+        var result = await _roleManager.DeleteAsync(role);
 
+        if (result.Succeeded)
+        {
+            return RedirectToAction("ListRoles");
+        }
 
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError("", error.Description);
+        }
 
+        return View("ListRoles");
+    }
+}
+```
 
+**Notice that, when delete a role, all relationship depends on that role will be deleated as well**.
 
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
