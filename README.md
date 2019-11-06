@@ -78,6 +78,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 70. [Ep 83 - Role Based Navigation Menu in .Net Core MVC](#ep-83---role-based-navigation-menu-in-net-core-mvc)
 71. [Ep 84 - Get List of Users in .Net Core MVC](#ep-84---get-list-of-users-in-net-core-mvc)
 72. [Ep 85 - Edit Users in .Net Core MVC](#ep-85---edit-users-in-net-core-mvc)
+73. [Ep 86 - Delete Users in .Net Core MVC](#ep-86---delete-users-in-net-core-mvc)
 
  
 ## Notes
@@ -6340,19 +6341,57 @@ public async Task<IActionResult> EditUser(EditUserViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 86 - [Delete Users in .Net Core MVC](https://www.youtube.com/watch?v=MhNfyZGfY-A&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=86)
+
+Deleting data using a **GET** request is **not** recommended. 
+
+Just imagine what can happen if there is an image tag in a malicious email as shown below. The moment we open the email, 
+the image tries to load and issues a GET request, which would delete the data. 
+
+<img src="http://localhost/Administration/DeleteUser/123" />
 
 
+Also, when search engines index your page, they issue a GET request which would delete the data. 
 
+In general GET request should be free of any side-effects, meaning it should not change the state on the server. 
+Deletes should **always be performed using a POST** request. 
 
+```HTML
+<form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" autocomplete="off">
+    <a class="btn btn-primary"
+        asp-controller="Administration" asp-action="EditUser" asp-route-id="@user.Id">Edit</a>
+    <button type="submit" class="btn btn-danger">Delete</button>
+</form>
+```
 
+```C#
+[HttpPost]
+public async Task<IActionResult> DeleteUser(string id)
+{
+    var user = await _userManager.FindByIdAsync(id);
 
+    if (user == null)
+    {
+        ViewBag.ErrorMessage = $"User with Id = {id} cannot be found";
+        return View("NotFound");
+    }
+    var result = await _userManager.DeleteAsync(user);
 
+    if (result.Succeeded)
+    {
+        return RedirectToAction("ListUsers");
+    }
 
+    foreach (var error in result.Errors)
+    {
+        ModelState.AddModelError("", error.Description);
+    }
 
+    return View("ListUsers");
+}
+```
 
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
