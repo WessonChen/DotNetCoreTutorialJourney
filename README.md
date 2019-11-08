@@ -87,6 +87,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 79. [Ep 94 - Claims Based Authorization in .Net Core MVC](#ep-94---claims-based-authorization-in-net-core-mvc)
 80. [Ep 95 - Role Based vs Claims Based Authorization in .Net Core MVC](#ep-95---role-based-vs-claims-based-authorization-in-net-core-mvc)
 81. [Ep 96 - Claims Based View in .Net Core MVC](#ep-96---claims-based-view-in-net-core-mvc)
+82. [Ep 97 - Change AccessDenied Route in .Net Core MVC](#ep-97---change-accessdenied-route-in-net-core-mvc)
 
  
 ## Notes
@@ -7076,19 +7077,32 @@ so you do not have to import it in every individual view.
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 97 - [Change AccessDenied Route in .Net Core MVC](https://www.youtube.com/watch?v=1Mi9Y9GAuCw&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=97)
+
+**Default AccessDenied Route**
+
+In ASP.NET Core if we try to access an unauthorized resource, by default we are redirected to 
+> /Account/AccessDenied
 
 
+**Change Default AccessDenied Route**
 
+To change the default access denied route, modify the code in `ConfigureServices()` method of the `Startup` class 
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.ConfigureApplicationCookie(options =>
+    {
+        options.AccessDeniedPath = new PathString("/Administration/AccessDenied");
+    });
+}
+```
 
+If we try to access an unauthorized resource, we will be redirected to /Administration/AccessDenied path. 
+Our obvious next step is to include AccessDenied action in the Administration controller and the corresponding view. 
 
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
