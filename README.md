@@ -83,6 +83,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 75. [Ep 88 - Delete Roles in .Net Core MVC](#ep-88---delete-roles-in-net-core-mvc)
 76. [Ep 89 - Enforce ON DELETE NO ACTION in EF Core](#ep-89---enforce-on-delete-no-action-in-ef-core)
 77. [Ep 91 - Add or Remove Roles from User in .Net Core MVC](#ep-91---add-or-remove-roles-from-user-in-net-core-mvc)
+78. [Ep 93 - Manage User Claims in .Net Core MVC](#ep-93---manage-user-claims-in-net-core-mvc)
 
  
 ## Notes
@@ -6762,19 +6763,175 @@ public async Task<IActionResult> ManageUserRoles(List<UserRolesViewModel> model,
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 93 - [Manage User Claims in .Net Core MVC](https://www.youtube.com/watch?v=5XA4Z-SOif8&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=93)
 
+```HTML
+<div class="card-footer">
+    <a asp-action="ManageUserClaims" asp-route-userId="@Model.Id"
+        style="width:auto" class="btn btn-primary">
+        Manage Claims
+    </a>
+</div>
+```
 
+User claims are stored in `AspNetUserClaims` table. So, once the Update button is clicked the data should be updated 
+in the underlying `AspNetUserClaims` database table.
 
+<p align="center">
+  <img src="https://i.ibb.co/r0GkP6k/asp-net-core-aspnetuserclaims-table.png">
+</p>
 
+**Claims Store**
 
+To keep it simple, for our sample application, we are storing claims in the following `ClaimsStore` static class. 
+You could store them in a configuration file, database table etc.
 
+```C#
+public static class ClaimsStore
+{
+    public static List<Claim> AllClaims = new List<Claim>()
+    {
+        new Claim("Create Role", "Create Role"),
+        new Claim("Edit Role","Edit Role"),
+        new Claim("Delete Role","Delete Role")
+    };
+}
+```
 
+**UserClaimsViewModel**
 
+```C#
+public class UserClaimsViewModel
+{
+    public UserClaimsViewModel()
+    {
+        Cliams = new List<UserClaim>();
+    }
 
+    public string UserId { get; set; }
+    public List<UserClaim> Cliams { get; set; }
+}
+```
 
+```C#
+public class UserClaim
+{
+    public string ClaimType { get; set; }
+    public bool IsSelected { get; set; }
+}
+```
 
+**ManageUserClaims Action**
 
+```C#
+[HttpGet]
+public async Task<IActionResult> ManageUserClaims(string userId)
+{
+    var user = await _userManager.FindByIdAsync(userId);
 
+    if (user == null)
+    {
+        ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
+        return View("NotFound");
+    }
+
+    // UserManager service GetClaimsAsync method gets all the current claims of the user
+    var existingUserClaims = await _userManager.GetClaimsAsync(user);
+
+    var model = new UserClaimsViewModel
+    {
+        UserId = userId
+    };
+
+    // Loop through each claim we have in our application
+    foreach (Claim claim in ClaimsStore.AllClaims)
+    {
+        UserClaim userClaim = new UserClaim
+        {
+            ClaimType = claim.Type
+        };
+
+        // If the user has the claim, set IsSelected property to true, so the checkbox
+        // next to the claim is checked on the UI
+        if (existingUserClaims.Any(c => c.Type == claim.Type))
+        {
+            userClaim.IsSelected = true;
+        }
+
+        model.Cliams.Add(userClaim);
+    }
+    return View(model);
+}
+
+[HttpPost]
+public async Task<IActionResult> ManageUserClaims(UserClaimsViewModel model)
+{
+    var user = await _userManager.FindByIdAsync(model.UserId);
+
+    if (user == null)
+    {
+        ViewBag.ErrorMessage = $"User with Id = {model.UserId} cannot be found";
+        return View("NotFound");
+    }
+
+    // Get all the user existing claims and delete them
+    var claims = await _userManager.GetClaimsAsync(user);
+    var result = await _userManager.RemoveClaimsAsync(user, claims);
+
+    if (!result.Succeeded)
+    {
+        ModelState.AddModelError("", "Cannot remove user existing claims");
+        return View(model);
+    }
+
+    // Add all the claims that are selected on the UI
+    result = await _userManager.AddClaimsAsync(user,
+        model.Cliams.Where(c => c.IsSelected).Select(c => new Claim(c.ClaimType, c.ClaimType)));
+
+    if (!result.Succeeded)
+    {
+        ModelState.AddModelError("", "Cannot add selected claims to user");
+        return View(model);
+    }
+
+    return RedirectToAction("EditUser", new { Id = model.UserId });
+}
+```
+
+**ManageUserClaims View**
+
+```HTML
+@model UserClaimsViewModel
+
+<form method="post">
+    <div class="card">
+        <div class="card-header">
+            <h2>Manage User Claims</h2>
+        </div>
+        <div class="card-body">
+            @for (int i = 0; i < Model.Cliams.Count; i++)
+            {
+                <div class="form-check m-1">
+                    <input type="hidden" asp-for="@Model.Cliams[i].ClaimType" />
+                    <input asp-for="@Model.Cliams[i].IsSelected" class="form-check-input" />
+                    <label class="form-check-label" asp-for="@Model.Cliams[i].IsSelected">
+                        @Model.Cliams[i].ClaimType
+                    </label>
+                </div>
+            }
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+        <div class="card-footer">
+            <input type="submit" value="Update" class="btn btn-primary"
+                   style="width:auto" />
+            <a asp-action="EditUser" asp-route-id="@Model.UserId"
+               class="btn btn-primary" style="width:auto">Cancel</a>
+        </div>
+    </div>
+</form>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
