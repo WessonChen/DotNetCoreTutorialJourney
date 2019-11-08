@@ -88,6 +88,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 80. [Ep 95 - Role Based vs Claims Based Authorization in .Net Core MVC](#ep-95---role-based-vs-claims-based-authorization-in-net-core-mvc)
 81. [Ep 96 - Claims Based View in .Net Core MVC](#ep-96---claims-based-view-in-net-core-mvc)
 82. [Ep 97 - Change AccessDenied Route in .Net Core MVC](#ep-97---change-accessdenied-route-in-net-core-mvc)
+83. [Ep 99 - Create Custom Authorization Policy Using Func in .Net Core MVC](#ep-98---create-custom-authorization-policy-using-func-in-net-core-mvc)
 
  
 ## Notes
@@ -6986,7 +6987,7 @@ services.AddAuthorization(options =>
 });
 ```
 
-The above policy checks if it has claim. It does not check the claim value. We can do.
+The above policy checks if it has claim. It does not check the claim value. We can do
 
 ```C#
 services.AddAuthorization(options =>
@@ -6995,6 +6996,8 @@ services.AddAuthorization(options =>
         policy => policy.RequireClaim("Country", "USA", "India", "UK"));
 });
 ```
+
+Notice that it is case sensitive.
 
 #### [Back to Table of Contents](#table-of-contents)
 
@@ -7114,17 +7117,40 @@ Our obvious next step is to include AccessDenied action in the Administration co
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 99 - [Create Custom Authorization Policy Using Func in .Net Core MVC](https://www.youtube.com/watch?v=KJprzM49NnU&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=99)
 
+Keep stacking `policy.Require` only add more **And** conditon to the policy.
+What should we do if we want **Or** condition.
 
+```C#
+options.AddPolicy("EditRolePolicy",
+    policy => policy.RequireAssertion(context => context.User.IsInRole("Admin")
+    || context.User.HasClaim(claim => claim.Type == "Edit Role" && claim.Value == "Edit Role")));
+```
 
+- On the AuthorizationPolicyBuilder instance, use `RequireAssertion` method instead of `RequireClaim` or `RequireRole`
+- `RequireAssertion()` method takes `Func<AuthorizationHandlerContext, bool>` as a parameter
+- This Func takes `AuthorizationHandlerContext` as input parameter and returns a boolean
+- The `AuthorizationHandlerContext` instance provides access to the User roles and claims
 
+Func encapsulates a method, so the above code can also be rewritten as shown below. We created a separate method and referenced it, instead of creating the method inline.
 
+```C#
+services.AddAuthorization(options =>
+{
+    options.AddPolicy("EditRolePolicy",
+        policy => policy.RequireAssertion(context => AuthorizeAccess(context)));
+});
 
+private bool AuthorizeAccess(AuthorizationHandlerContext context)
+{
+    return context.User.IsInRole("Admin") ||
+        context.User.HasClaim(claim => claim.Type == "Edit Role" && claim.Value == "Edit Role");
+    ;
+}
+```
 
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 

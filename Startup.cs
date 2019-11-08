@@ -13,10 +13,13 @@ namespace DotNetCoreTutorialJourney
     public class Startup
     {
         private IConfiguration _configuration;
+        private readonly UserManager<AppUser> _userManager;
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration,
+                        UserManager<AppUser> userManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -47,7 +50,7 @@ namespace DotNetCoreTutorialJourney
                     policy => policy.RequireClaim("Create Role"));
 
                 options.AddPolicy("EditRolePolicy",
-                    policy => policy.RequireClaim("Edit Role"));
+                    policy => policy.RequireAssertion(context => AuthorizeAccess(context)));
 
                 options.AddPolicy("DeleteRolePolicy",
                     policy => policy.RequireClaim("Delete Role"));
@@ -62,7 +65,8 @@ namespace DotNetCoreTutorialJourney
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-            } else
+            }
+            else
             {
                 app.UseExceptionHandler("/Error");
                 app.UseStatusCodePagesWithReExecute("/Error/{0}");
@@ -71,6 +75,13 @@ namespace DotNetCoreTutorialJourney
             app.UseStaticFiles();
             app.UseAuthentication();
             app.UseMvcWithDefaultRoute();
+        }
+
+        private bool AuthorizeAccess(AuthorizationHandlerContext context)
+        {
+            return context.User.IsInRole("Admin") ||
+                context.User.HasClaim(claim => claim.Type == "Edit Role" && claim.Value == "Edit Role");
+            ;
         }
     }
 }
