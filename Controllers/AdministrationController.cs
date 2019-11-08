@@ -29,12 +29,14 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "CreateRolePolicy")]
         public ViewResult CreateRole()
         {
             return View();
         }
 
         [HttpPost]
+        [Authorize(Policy = "CreateRolePolicy")]
         public async Task<IActionResult> CreateRole(CreateRoleViewModel model)
         {
             if (ModelState.IsValid)
@@ -54,6 +56,7 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "DeleteRolePolicy")]
         public async Task<IActionResult> DeleteRole(string id)
         {
             var role = await _roleManager.FindByIdAsync(id);
@@ -90,7 +93,6 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "DeleteRolePolicy")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -116,6 +118,7 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "EditRolePolicy")]
         public async Task<ViewResult> EditRole(string id)
         {
             var role = await _roleManager.FindByIdAsync(id);
@@ -142,6 +145,7 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "EditRolePolicy")]
         public async Task<IActionResult> EditRole(EditRoleViewModel model)
         {
             var role = await _roleManager.FindByIdAsync(model.Id);

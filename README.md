@@ -86,6 +86,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 78. [Ep 93 - Manage User Claims in .Net Core MVC](#ep-93---manage-user-claims-in-net-core-mvc)
 79. [Ep 94 - Claims Based Authorization in .Net Core MVC](#ep-94---claims-based-authorization-in-net-core-mvc)
 80. [Ep 95 - Role Based vs Claims Based Authorization in .Net Core MVC](#ep-95---role-based-vs-claims-based-authorization-in-net-core-mvc)
+81. [Ep 96 - Claims Based View in .Net Core MVC](#ep-96---claims-based-view-in-net-core-mvc)
 
  
 ## Notes
@@ -7032,19 +7033,48 @@ claims based authorization or a combination of both.
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 96 - [Claims Based View in .Net Core MVC](https://www.youtube.com/watch?v=72zYJw0nF-k&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=96)
 
+Similar to injecting `SignInManager<>` in `_Layout.cshtml`, we inject `IAuthorizationService` service into the view 
 
+```HTML
+@using Microsoft.AspNetCore.Authorization;
+@inject IAuthorizationService _authorizationService;
+```
 
+Pass the user and the name of the policy as parameters to `AuthorizeAsync()` method of `IAuthorizationService`. 
+Succeeded property returns true if the policy is satisfied, otherwise false. 
 
+```HTML
+@if ((await _authorizationService.AuthorizeAsync(User, "EditRolePolicy")).Succeeded)
+{
+    <a asp-controller="Administration" asp-action="EditRole"
+       asp-route-id="@role.Id" class="btn btn-primary">
+        Edit
+    </a>
+}
+```
 
+Though Edit button is hidden, the user can directly type the following URL to get to the EditRole action 
 
+> http://localhost:5000/Administration/EditRole/RoleIdGuidHere
 
+Make sure to protect the respective controller action as well 
 
+```C#
+[Authorize(Policy = "EditRolePolicy")]
+public async Task<IActionResult> EditRole(string id)
+{
+    // Code
+}
+```
 
+**Service injection in multiple views**
 
+If you need `IAuthorizationService` in multiple views, consider importing in `_ViewImports.cshtml`, 
+so you do not have to import it in every individual view. 
 
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
