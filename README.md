@@ -88,7 +88,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 80. [Ep 95 - Role Based vs Claims Based Authorization in .Net Core MVC](#ep-95---role-based-vs-claims-based-authorization-in-net-core-mvc)
 81. [Ep 96 - Claims Based View in .Net Core MVC](#ep-96---claims-based-view-in-net-core-mvc)
 82. [Ep 97 - Change AccessDenied Route in .Net Core MVC](#ep-97---change-accessdenied-route-in-net-core-mvc)
-83. [Ep 99 - Create Custom Authorization Policy Using Func in .Net Core MVC](#ep-98---create-custom-authorization-policy-using-func-in-net-core-mvc)
+83. [Ep 99 - Create Custom Authorization Policy Using Func in .Net Core MVC](#ep-99---create-custom-authorization-policy-using-func-in-net-core-mvc)
 
  
 ## Notes
