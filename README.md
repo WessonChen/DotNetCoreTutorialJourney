@@ -6986,6 +6986,16 @@ services.AddAuthorization(options =>
 });
 ```
 
+The above policy checks if it has claim. It does not check the claim value. We can do.
+
+```C#
+services.AddAuthorization(options =>
+{
+    options.AddPolicy("AllowedCountryPolicy",
+        policy => policy.RequireClaim("Country", "USA", "India", "UK"));
+});
+```
+
 #### [Back to Table of Contents](#table-of-contents)
 
 ### Ep 95 - [Role Based vs Claims Based Authorization in .Net Core MVC](https://www.youtube.com/watch?v=Uw2ujXvN3i4&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=95)
