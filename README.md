@@ -6988,20 +6988,47 @@ services.AddAuthorization(options =>
 
 ### Ep 95 - [Role Based vs Claims Based Authorization in .Net Core MVC](https://www.youtube.com/watch?v=Uw2ujXvN3i4&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=95)
 
+**In ASP.NET Core, a role is just a claim with type Role**
 
+**Roles Policy**
 
+We know claims are policy based. Since, a role is also a claim of type role, we can also use a role with the new policy syntax. 
 
+With claims, we create a policy and include one or more claims in that policy. 
+We can do the same thing with roles as well. Create a policy and include one or more roles in that policy.  
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddAuthorization(options =>
+    {
+        options.AddPolicy("SuperAdminPolicy", policy =>
+                  policy.RequireRole("Admin", "User", "Manager"));
+    });
+}
+```
 
+```C#
+[HttpPost]
+[Authorize(Policy = "SuperAdminPolicy")]
+public async Task<IActionResult> DeleteRole(string id)
+{
+    // Delete Role
+}
+```
 
+**Why do we have both in ASP.NET Core**
 
+In previous versions of asp.net we did not have claims based authorization, only role based authorization.  
 
+**Claims based authorization** is relatively new and is the **recommended** approach. 
+With it we can also use claims from **external identity providers** like Facebook, Google, Twitter etc. 
+We will discuss using external identity providers and the claims they provide in our upcoming videos. 
 
-
-
-
-
-
+**Role based authorization** is still supported in asp.net core for backward compatibility. 
+While Claims based authorization is the recommended approach, 
+depending on your application authorization requirements you may use role based authorization, 
+claims based authorization or a combination of both. 
 
 #### [Back to Table of Contents](#table-of-contents)
 
