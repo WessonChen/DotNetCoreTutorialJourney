@@ -84,6 +84,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 76. [Ep 89 - Enforce ON DELETE NO ACTION in EF Core](#ep-89---enforce-on-delete-no-action-in-ef-core)
 77. [Ep 91 - Add or Remove Roles from User in .Net Core MVC](#ep-91---add-or-remove-roles-from-user-in-net-core-mvc)
 78. [Ep 93 - Manage User Claims in .Net Core MVC](#ep-93---manage-user-claims-in-net-core-mvc)
+79. [Ep 94 - Claims Based Authorization in .Net Core MVC](#ep-94---claims-based-authorization-in-net-core-mvc)
+80. [Ep 95 - Role Based vs Claims Based Authorization in .Net Core MVC](#ep-95---role-based-vs-claims-based-authorization-in-net-core-mvc)
 
  
 ## Notes
@@ -6933,6 +6935,58 @@ public async Task<IActionResult> ManageUserClaims(UserClaimsViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 94 - [Claims Based Authorization in .Net Core MVC](https://www.youtube.com/watch?v=LJQBBvJ6tL0&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=94)
+
+**Creating Claims Policy**
+
+Claims are policy based. We create a policy and include one or more claims in that policy. 
+We then need to register the policy. 
+Creating and registering a claims policy is typically done in one step in `ConfigureServices()` method of the `Startup` class. 
+
+```C#
+services.AddAuthorization(options =>
+{
+    options.AddPolicy("DeleteRolePolicy", 
+        policy => policy.RequireClaim("Delete Role"));
+});
+```
+
+- The options parameter type is `AuthorizationOptions`
+- Use `AddPolicy()` method to create the policy
+- The first parameter is the name of the policy and the second parameter is the policy itself
+- To satisfy this policy requirements, the logged-in user must have `Delete Role` claim
+
+**Using Claims Policy for Authorization Checks**
+
+The policy can then be used on a controller or a controller action. 
+
+```C#
+[HttpPost]
+[Authorize(Policy = "DeleteRolePolicy")]
+public async Task<IActionResult> DeleteRole(string id)
+{
+    // Delete Role
+}
+```
+
+**Adding Multiple Claims to Policy**
+
+To add multiple claims to a given policy, chain `RequireClaim()` method 
+
+```C#
+services.AddAuthorization(options =>
+{
+    options.AddPolicy("DeleteRolePolicy", 
+        policy => policy.RequireClaim("Delete Role")
+                        .RequireClaim("Create Role")
+                    
+        );
+});
+```
+
+#### [Back to Table of Contents](#table-of-contents)
+
+### Ep 95 - [Role Based vs Claims Based Authorization in .Net Core MVC](https://www.youtube.com/watch?v=Uw2ujXvN3i4&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=95)
 
 
 
@@ -6949,20 +7003,7 @@ public async Task<IActionResult> ManageUserClaims(UserClaimsViewModel model)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
