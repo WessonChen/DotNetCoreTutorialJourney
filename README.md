@@ -91,6 +91,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 83. [Ep 99 - Create Custom Authorization Policy Using Func in .Net Core MVC](#ep-99---create-custom-authorization-policy-using-func-in-net-core-mvc)
 84. [Ep 101 - Custom Authorization Requirements and Handlers in .Net Core MVC](#ep-101---custom-authorization-requirements-and-handlers-in-net-core-mvc)
 85. [Ep 102 - Multiple Custom Authorization Handlers for a Requirement in .Net Core MVC](#ep-102---multiple-custom-authorization-handlers-for-a-requirement-in-net-core-mvc)
+86. [Ep 103 - Custom Authorization Handler Success vs Failure in .Net Core MVC](#ep-103---custom-authorization-handler-success-vs-failure-in-net-core-mvc)
 
  
 ## Notes
@@ -7356,9 +7357,40 @@ public void ConfigureServices(IServiceCollection services)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 103 - [Custom Authorization Handler Success vs Failure in .Net Core MVC](https://www.youtube.com/watch?v=119eY23O-RE&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=103)
 
+When evaluating an authorization requirement a handler can return any of the following 
+- Success - `context.Succeed()`
+- Failure - `context.Fail()`
+- Nothing - `Task.CompletedTask`
 
+It's very important we understand what the handler returns and the impact it can have on other handlers. 
+If you have multiple handlers for a requirement 
+- **Failure** takes precedence over **success**. This means
+- When one of the handlers return **failure**, **the policy fails** even if the other handlers return success
+- If **none** of the handlers return an explicit **success**, the policy will **not** succeed.
+- For a policy to **succeed**, an explicit success **must** be returned from one of the handlers, 
+and **no other handler must** return an explicit failure
+- In general, do not return failure from a handler, as other handlers for the same requirement may succeed.
+- Only return an explicit failure, when you want to guarantee the failure of the policy even when the other handlers succeed.
+- By default, all handlers are called, irrespective of what a handler returns (success, failure or nothing). 
+This is because in the other handlers, there might be something else going on besides evaluating requirements, may be logging for example.
+- If you do not want the rest of the handlers to be called, when a failure is returned, set `InvokeHandlersAfterFailure` property to false. 
+The default is true.
 
+We do this in `ConfigureServices()` method of the `Startup` class 
+
+```C#
+services.AddAuthorization(options =>
+{
+    options.AddPolicy("EditRolePolicy", policy =>
+        policy.AddRequirements(new ManageAdminRolesAndClaimsRequirement())); 
+
+    options.InvokeHandlersAfterFailure = false;
+});
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
