@@ -42,6 +42,13 @@ namespace DotNetCoreTutorialJourney
                 config.Filters.Add(new AuthorizeFilter(policy));
             }).AddXmlSerializerFormatters();
 
+            services.AddAuthentication().
+                AddGoogle(options =>
+                {
+                    options.ClientId = "88577239875-hl6h46k9g834d1ofginr9suei73a3mhm.apps.googleusercontent.com";
+                    options.ClientSecret = "_y7e3IGOFdVGI3BEcuMjNDNv";
+                });
+
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("CreateRolePolicy",

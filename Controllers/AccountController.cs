@@ -3,6 +3,7 @@ using DotNetCoreTutorialJourney.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DotNetCoreTutorialJourney.Controllers
@@ -26,6 +27,17 @@ namespace DotNetCoreTutorialJourney.Controllers
             return View();
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult ExternalLogin(string provider, string returnUrl)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account",
+                                new { ReturnUrl = returnUrl });
+            var properties = _signInManager
+                .ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return new ChallengeResult(provider, properties);
+        }
+
         [HttpGet]
         [HttpPost]
         [AllowAnonymous]
@@ -33,7 +45,15 @@ namespace DotNetCoreTutorialJourney.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public ViewResult Login() => View();
+        public async Task<ViewResult> Login(string returnUrl)
+        {
+            LoginViewModel model = new LoginViewModel
+            {
+                ReturnUrl = returnUrl,
+                ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
+            };
+            return View(model);
+        }
 
         [HttpPost]
         [AllowAnonymous]

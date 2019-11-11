@@ -7438,6 +7438,113 @@ If we do not like this default path signin-google we can change it later.
   <img src="https://i.ibb.co/7tr8z38/create-google-oauth-client-id.png">
 </p>
 
+**Enable Google Authentication**
+
+Include the following configuration in `ConfigureServices()` method of the `Startup` class.
+
+```C#
+services.AddAuthentication().AddGoogle(options =>
+{
+    options.ClientId = "XXXXX";
+    options.ClientSecret = "YYYYY";
+});
+```
+
+The code required for Google authentication including this AddGoogle() method is present in Microsoft.AspNetCore.Authentication.Google nuget package.
+
+**LoginViewModel**
+
+The model for login view is `LoginViewModel` class. Include `ReturnUrl` and `ExternalLogins` properties. 
+
+```C#
+public class LoginViewModel
+{
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
+
+    [Required]
+    [DataType(DataType.Password)]
+    public string Password { get; set; }
+
+    [Display(Name = "Remember me")]
+    public bool RememberMe { get; set; }
+
+    public string ReturnUrl { get; set; }
+
+    // AuthenticationScheme is in Microsoft.AspNetCore.Authentication namespace
+    public IList<AuthenticationScheme> ExternalLogins { get; set; }
+}
+```
+
+`ReturnUrl` is the URL the user was trying to access before authentication. We preserve and pass it between requests using ReturnUrl property, 
+so the user can be redirected to that URL upon successful authentication. 
+
+`ExternalLogins` property stores the list of external logins (like Facebook, Google etc) that are enabled in our application. 
+
+**Login Action in AccountController**
+
+- Populate `ReturnUrl` and `ExternalLogins` properties of `LoginViewModel` and then pass the instance to the view.
+- `GetExternalAuthenticationSchemesAsync()` method of `SignInManager` service, 
+returns the list of all configured external identity providers like (Google, Facebook etc).
+- At the moment we only have one external identity provider configured and that is Google.
+
+```C#
+[HttpGet]
+[AllowAnonymous]
+public async Task<IActionResult> Login(string returnUrl)
+{
+    LoginViewModel model = new LoginViewModel
+    {
+        ReturnUrl = returnUrl,
+        ExternalLogins = 
+        (await signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
+    };
+
+    return View(model);
+}
+```
+
+**Login Page (Login.cshtml)**
+
+```HTML
+<form method="post" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl">
+    <div>
+        @foreach (var provider in Model.ExternalLogins)
+        {
+            <button type="submit" class="btn btn-primary"
+                    name="provider" value="@provider.Name"
+                    title="Log in using your @provider.DisplayName account">
+                @provider.DisplayName
+            </button>
+        }
+    </div>
+</form>
+```
+
+- We are looping through each external login provider we have in `Model.ExternalLogins`
+- For each external login provider a submit button is dynamically generated
+- At the moment we only have one external identity provider configured and that is Google, so we get one Submit button.
+- This submit button is inside a form. The form method attribute value is post and asp-action attribute value is `ExternalLogin`
+- So when the submit button is clicked the form is posted to `ExternalLogin` action in `AccountController`
+- The login provider is Google, so in the foreach loop, `provider.Name` returns Google.
+- Since the button name is set to provider, asp.net core model binding maps the provider name which is Google to `provider` parameter on the `ExternalLogin` action.
+
+**ExternalLogin action in AccountController**
+
+```C#
+[AllowAnonymous]
+[HttpPost]
+public IActionResult ExternalLogin(string provider, string returnUrl)
+{
+    var redirectUrl = Url.Action("ExternalLoginCallback", "Account",
+                        new { ReturnUrl = returnUrl });
+    var properties = signInManager
+        .ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+    return new ChallengeResult(provider, properties);
+}
+```
+
 #### [Back to Table of Contents](#table-of-contents)
 
 
