@@ -118,7 +118,6 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "EditRolePolicy")]
         public async Task<ViewResult> EditRole(string id)
         {
             var role = await _roleManager.FindByIdAsync(id);
@@ -145,7 +144,6 @@ namespace DotNetCoreTutorialJourney.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "EditRolePolicy")]
         public async Task<IActionResult> EditRole(EditRoleViewModel model)
         {
             var role = await _roleManager.FindByIdAsync(model.Id);

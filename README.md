@@ -90,6 +90,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 82. [Ep 97 - Change AccessDenied Route in .Net Core MVC](#ep-97---change-accessdenied-route-in-net-core-mvc)
 83. [Ep 99 - Create Custom Authorization Policy Using Func in .Net Core MVC](#ep-99---create-custom-authorization-policy-using-func-in-net-core-mvc)
 84. [Ep 101 - Custom Authorization Requirements and Handlers in .Net Core MVC](#ep-101---custom-authorization-requirements-and-handlers-in-net-core-mvc)
+85. [Ep 102 - Multiple Custom Authorization Handlers for a Requirement in .Net Core MVC](#ep-102---multiple-custom-authorization-handlers-for-a-requirement-in-net-core-mvc)
 
  
 ## Notes
@@ -7307,25 +7308,53 @@ public async Task<IActionResult> ManageUserRoles(string userId)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 102 - [Multiple Custom Authorization Handlers for a Requirement in .Net Core MVC](https://www.youtube.com/watch?v=aKEN2Z-jfgc&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=102)
 
+For the logged-in admin to be able to edit and manage other Admin roles and claims either Condition 1 OR Condition 2 must be satisfied. 
+There is an OR relationship. We already have a handler for handling the first condition of the requirement.
 
+**Custom requirement handler - 2**
 
+```C#
+public class SuperAdminHandler :
+    AuthorizationHandler<ManageAdminRolesAndClaimsRequirement>
+{
+    protected override Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        ManageAdminRolesAndClaimsRequirement requirement)
+    {
+        if (context.User.IsInRole("Super Admin"))
+        {
+            context.Succeed(requirement);
+        }
 
+        return Task.CompletedTask;
+    }
+}
+```
 
+**Registering the custom requirement handlers**
 
+Once we have the second handler implemented, we register it in the `ConfigureServices()` method of the Startup class just like the first handler. 
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddAuthorization(options =>
+    {
+        options.AddPolicy("EditRolePolicy", policy =>
+            policy.AddRequirements(new ManageAdminRolesAndClaimsRequirement()));
+    });
 
+    // Register the first handler
+    services.AddSingleton<IAuthorizationHandler,
+        CanEditOnlyOtherAdminRolesAndClaimsHandler>();
+    // Register the second handler
+    services.AddSingleton<IAuthorizationHandler, SuperAdminHandler>();
+}
+```
 
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
