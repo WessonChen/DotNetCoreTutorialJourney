@@ -1,4 +1,5 @@
 ﻿using DotNetCoreTutorialJourney.Models;
+using DotNetCoreTutorialJourney.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,13 +14,10 @@ namespace DotNetCoreTutorialJourney
     public class Startup
     {
         private IConfiguration _configuration;
-        private readonly UserManager<AppUser> _userManager;
 
-        public Startup(IConfiguration configuration,
-                        UserManager<AppUser> userManager)
+        public Startup(IConfiguration configuration)
         {
             _configuration = configuration;
-            _userManager = userManager;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -49,14 +47,18 @@ namespace DotNetCoreTutorialJourney
                 options.AddPolicy("CreateRolePolicy",
                     policy => policy.RequireClaim("Create Role"));
 
-                options.AddPolicy("EditRolePolicy",
-                    policy => policy.RequireAssertion(context => AuthorizeAccess(context)));
+                //options.AddPolicy("EditRolePolicy",
+                //    policy => policy.RequireAssertion(context => AuthorizeAccess(context)));
+
+                options.AddPolicy("EditRolePolicy", policy =>
+                    policy.AddRequirements(new ManageAdminRolesAndClaimsRequirement()));
 
                 options.AddPolicy("DeleteRolePolicy",
                     policy => policy.RequireClaim("Delete Role"));
             });
 
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
+            services.AddSingleton<IAuthorizationHandler, CanEditOnlyOtherAdminRolesAndClaimsHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

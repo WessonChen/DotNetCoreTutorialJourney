@@ -89,6 +89,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 81. [Ep 96 - Claims Based View in .Net Core MVC](#ep-96---claims-based-view-in-net-core-mvc)
 82. [Ep 97 - Change AccessDenied Route in .Net Core MVC](#ep-97---change-accessdenied-route-in-net-core-mvc)
 83. [Ep 99 - Create Custom Authorization Policy Using Func in .Net Core MVC](#ep-99---create-custom-authorization-policy-using-func-in-net-core-mvc)
+84. [Ep 101 - Custom Authorization Requirements and Handlers in .Net Core MVC](#ep-101---custom-authorization-requirements-and-handlers-in-net-core-mvc)
 
  
 ## Notes
@@ -7152,21 +7153,159 @@ private bool AuthorizeAccess(AuthorizationHandlerContext context)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 101 - [Custom Authorization Requirements and Handlers in .Net Core MVC](https://www.youtube.com/watch?v=cXsYer31UPo&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=101)
 
+**Built-in asp.net core authorization requirements**
 
+- `RequireClaim()` method adds `ClaimsAuthorizationRequirement`. 
+- `RequireRole()` method adds `RolesAuthorizationRequirement`.
+- `RequireAssertion()` method adds `AssertionRequirement`.
 
+All these are built-in requirements. If the application that we are building, is a simple application then, 
+these built-in requirements would do the job. However, for most applications we need more than what is offered by these built-in requirements. 
+This is when we create a custom authorization requirement. 
 
+**Custom authorization requirement**
 
+An authorization policy has one or more requirements. Each authorization requirement has one or more handlers. 
 
+<p align="center">
+  <img src="https://i.ibb.co/dc69j5X/asp-net-core-custom-requirements.png">
+</p>
 
+All the built-in authorization requirements implement `IAuthorizationRequirement` interface. So to create a custom authorization requirement, 
+we need to implement `IAuthorizationRequirement` interface. This is an empty marker interface, 
+which means there is nothing in this interface that our custom requirement class must implement. 
 
+It is in the **authorization handler** that we write our logic to allow or deny access to a resource like a **controller action** for example. 
+An authorization handler implements `AuthorizationHandler<T>` where `T` is the type of requirement. 
 
+**Our Application Authorization Requirement**
 
+An Admin user can manage other Admin user roles and claims but not their own claims and roles.  
 
+To achieve this, we need to know the logged-in **UserID** and the **UserId** of the Admin being edited. 
+If they are the same we do not want to allow access. The admin UserID being edited is passed in the URL as a query string parameter. 
 
+**Why create custom requirements and handlers**
 
+We can create a custom policy using a `func`. We discussed the func delegate and `RequireAssertion()` method before.
+However, a `func` cannot be used to satisfy our authorization requirement here because we need to access the query string parameter. 
+Also as your authorization requirements get complex, you may need access to other services via dependency injection. 
+In situations like these we create custom requirements and handlers. 
 
+**Creating a custom authorization requirement**
 
+To create a custom authorization requirement, create a class that implements the `IAuthorizationRequirement` interface. 
+This is an empty marker interface, which means there is nothing in this interface that our custom requirement class must implement. 
+
+```C#
+public class ManageAdminRolesAndClaimsRequirement : IAuthorizationRequirement
+{ }
+```
+
+`IAuthorizationRequirement` interface is in `Microsoft.AspNetCore.Authorization` namespace. 
+
+**Creating a custom authorization handler**
+
+It is in the authorization handler that we write our logic to allow or deny access to a resource like a controller action for example. 
+To implement a handler you inherit from `AuthorizationHandler<T>`, and implement the `HandleRequirementAsync()` method. 
+The generic parameter `<T>` on the `AuthorizationHandler<T>` is the type of requirement.
+
+```C#
+namespace DotNetCoreTutorialJourney.Security
+{
+    public class CanEditOnlyOtherAdminRolesAndClaimsHandler :
+        AuthorizationHandler<ManageAdminRolesAndClaimsRequirement>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context,
+            ManageAdminRolesAndClaimsRequirement requirement)
+        {
+            var authFilterContext = context.Resource as AuthorizationFilterContext;
+            if (authFilterContext == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            string loggedInAdminId =
+                context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+            string adminIdBeingEdited = authFilterContext.HttpContext.Request.Query["userId"];
+
+            if (context.User.IsInRole("Admin") &&
+                context.User.HasClaim(claim => claim.Type == "Edit Role") &&
+                adminIdBeingEdited.ToLower() != loggedInAdminId.ToLower())
+            {
+                context.Succeed(requirement);
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+}
+```
+
+**Authorization handler code explanation**
+
+Resource property of `AuthorizationHandlerContext` returns the resource that we are protecting. 
+In our case, we are using this custom requirement to protect a controller action method. 
+So the following line returns the controller action being protected as the `AuthorizationFilterContext` 
+and provides access to `HttpContext`, `RouteData`, and everything else provided by `MVC` and `Razor Pages`.
+
+```C#
+var authFilterContext = context.Resource as AuthorizationFilterContext;
+```
+
+If `AuthorizationFilterContext` is `NULL`, we **cannot check** if the requirement is met or not, so we return `Task.CompletedTask` and the access is **not authorised**. 
+
+```C#
+if (authFilterContext == null)
+{
+    return Task.CompletedTask;
+}
+```
+
+`Succeed()` method specifies that the requirement is successfully evaluated
+
+```C#
+if (context.User.IsInRole("Admin") &&
+    context.User.HasClaim(claim => claim.Type == "Edit Role") &&
+    adminIdBeingEdited.ToLower() != loggedInAdminId.ToLower())
+{
+    context.Succeed(requirement);
+}
+```
+
+**Authorization handler registration**
+
+We register custom authorization handler in `ConfigureServices()` method of the Startup class 
+
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddAuthorization(options =>
+    {
+        options.AddPolicy("EditRolePolicy", policy =>
+            policy.AddRequirements(new ManageAdminRolesAndClaimsRequirement()));
+    });
+
+    services.AddSingleton<IAuthorizationHandler, 
+        CanEditOnlyOtherAdminRolesAndClaimsHandler>();
+}
+```
+
+Finally use the custom policy to protect the resources like controller action methods
+
+```C#
+[HttpGet]
+[Authorize(Policy = "EditRolePolicy")]
+public async Task<IActionResult> ManageUserRoles(string userId)
+{
+    // Implementation
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
