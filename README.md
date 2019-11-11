@@ -92,6 +92,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 84. [Ep 101 - Custom Authorization Requirements and Handlers in .Net Core MVC](#ep-101---custom-authorization-requirements-and-handlers-in-net-core-mvc)
 85. [Ep 102 - Multiple Custom Authorization Handlers for a Requirement in .Net Core MVC](#ep-102---multiple-custom-authorization-handlers-for-a-requirement-in-net-core-mvc)
 86. [Ep 103 - Custom Authorization Handler Success vs Failure in .Net Core MVC](#ep-103---custom-authorization-handler-success-vs-failure-in-net-core-mvc)
+87. [Ep 105 - Create Google OAuth Credentials](#ep-105---create-google-oauth-credentials)
 
  
 ## Notes
@@ -7392,22 +7393,52 @@ services.AddAuthorization(options =>
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 105 - [Create Google OAuth Credentials](https://www.youtube.com/watch?v=V4KqpIX6pdI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=105)
 
+Navigate to the following website and login with your google credentials
+> https://console.developers.google.com
 
+**Step 1 : Create a project if you do not have one already**
 
+<p align="center">
+  <img src="https://i.ibb.co/z4t7vzG/google-console-create-project.png">
+</p>
 
+**Step 2 : Enable Google+ API**
 
+Click on the **Library** tab on the left and search for **Googleplus API** and enable it. 
 
+**Step 3 : Configure OAuth consent screen**
 
+Click on the **OAuth consent screen** tab on the left. If you do not see **OAuth consent screen** tab, click on **Google APIs** banner image on the top left hand corner.
 
+On the **OAuth consent screen**, the only required field is the **Application name**. This is the name that will be shown to end users asking for their consent.  
 
+**Step 4 : Create OAuth client credentials**
 
+Click on the **Credentials** tab on the left navigation menu. 
 
+On the subsequent page, click **Create credentials** button. From the dropdownlist, select **OAuth client ID**. 
 
+<p align="center">
+  <img src="https://i.ibb.co/kKLw68P/google-developer-console-create-oauth-client.png">
+</p>
 
+On the next screen (i.e Create OAuth client ID) 
 
+ - Select **Web application** as the Application type
+- Provide a meaningful name for the OAuth client.
+- **Authorized JavaScript origins** - This is the URL of where our application is running. To get this URL, on your localhost, 
+right click on the project name in Solution Explorer in Visual Studio and select Properties. On the Debug tab, you will find the App URL.
+- **Authorized redirect URIs** - This is the path in our application that users are redirected to after they are authenticated by Google. 
+The default path in asp.net core is signin-google. So the complete redirect URI is Application Root URI/signin-google. 
+If we do not like this default path signin-google we can change it later.
 
+<p align="center">
+  <img src="https://i.ibb.co/7tr8z38/create-google-oauth-client-id.png">
+</p>
 
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
