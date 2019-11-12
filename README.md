@@ -94,7 +94,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 86. [Ep 103 - Custom Authorization Handler Success vs Failure in .Net Core MVC](#ep-103---custom-authorization-handler-success-vs-failure-in-net-core-mvc)
 87. [Ep 105 - Create Google OAuth Credentials](#ep-105---create-google-oauth-credentials)
 88. [Ep 107 - ExternalLoginCallback Action in .Net Core MVC](#ep-107---externallogincallback-action-in-net-core-mvc)
-
+89. [Ep 108 - Create Facebook OAuth Credentials](#ep-108---create-facebook-oauth-credentials)
  
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -7641,29 +7641,78 @@ public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, 
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 108 - [Create Facebook OAuth Credentials](https://www.youtube.com/watch?v=uAymQERp90w&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=108)
 
+Step 1 : Log into 
+> https://developers.facebook.com
 
+Step 2 : Click on **My Apps** dropdown and click **Create App** button 
 
+<p align="center">
+  <img src="https://i.ibb.co/jrCJwLY/register-app-with-facebook.png">
+</p>
 
+Step 3 : Create a New App ID 
 
+Specify a **display name** for the client application. This is the name that is displayed on the consent screen. 
+The email associated with your Facebook account is in the **Contact Email** textbox. 
+Click **Create App ID** button to create the app. 
 
+Step 4 : Click **Setup** button the **Facebook Login** product 
 
+<p align="center">
+  <img src="https://i.ibb.co/88Yw8p6/register-app-facebook-developer.png">
+</p>
 
+Step 5 : Click on the **Settings** tab under **Facebook Login** on the left navigation menu
 
+<p align="center">
+  <img src="https://i.ibb.co/CJg6RYb/facebook-create-oauth-app.png">
+</p>
 
+Step 6 : Enable Client OAuth Login.  
 
+Also specify **Valid OAuth Redirect URI**. This is the URI at which your application is hosted. 
+To this URI append that path segment `/signin-facebook`. Finally click `Save Changes`. 
 
+<p align="center">
+  <img src="https://i.ibb.co/VHRD41G/facebook-login-client-oauth-settings.png">
+</p>
 
+Step 7 : On the left navigaton menu, click on the **Basic** tab under **Settings** to obtain **App ID** and **App Secret** 
 
+Step 8 : Enable Facebook authentication
 
+Just like `AddGoogle()`, we have `AddFacebook()` extension method to configure Facebook authentication in .NET core. 
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = "XXXXX";
+            options.ClientSecret = "XXXXX";
+        })
+        .AddFacebook(options =>
+        {
+            options.AppId = "XXXXX";
+            options.AppSecret = "XXXXX";
+        });
+}
+```
 
+Then we can use actions form the last note to perform facebook login function now
 
+Notice, for the user with email, there are 2 rows in `AspNetUserLogins` table. One row is for the Facebook login and the other for Google login. 
+Both these rows link to the one row in `AspNetUsers` table. Which means if both the facebook and the google are using the same email,
+they will be logged into the same local account.
 
+<p align="center">
+  <img src="https://i.ibb.co/sWzVVVs/asp-net-core-identity-facebook-login.png">
+</p>
 
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
