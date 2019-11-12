@@ -99,6 +99,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 91. [Ep 112 - Block Unconfirmed Email in .Net Core MVC](#ep-112---block-unconfirmed-email-in-net-core-mvc)
 92. [Ep 113 - Email Confirmation in .Net Core MVC](#ep-113---email-confirmation-in-net-core-mvc)
 93. [Ep 115 - Forgot Password in .Net Core MVC](#ep-115---forgot-password-in-net-core-mvc)
+94. [Ep 116 - Reset Password in .Net Core MVC](#ep-116---reset-password-in-net-core-mvc)
 
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -8299,10 +8300,120 @@ public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 116 - [Reset Password in .Net Core MVC](https://www.youtube.com/watch?v=72Eu92ZkgCg&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=116)
 
+To be able to reset the user password we need the following
+1. Email, 
+2. Password reset token, 
+3. New Password and 
+4. Confirm Password
 
+**Reset Password View Model**
 
+```C#
+using System.ComponentModel.DataAnnotations;
 
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class ResetPasswordViewModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        [Compare("Password", ErrorMessage = "Password and Confirm Password must match")]
+        public string ConfirmPassword { get; set; }
+
+        public string Token { get; set; }
+    }
+}
+```
+
+**Reset Password View**
+
+```HTML
+@model ResetPasswordViewModel
+
+<h2>Reset Password</h2>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form method="post" autocomplete="off">
+            <input asp-for="Token" type="hidden" />
+            <input asp-for="Email" type="hidden" />
+            <div class="form-group">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmPassword"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <button type="submit" class="btn btn-primary">Reset</button>
+        </form>
+    </div>
+</div>
+```
+
+**Reset Password Actions**
+
+```C#
+[HttpGet]
+[AllowAnonymous]
+public IActionResult ResetPassword(string token, string email)
+{
+    if (token == null || email == null)
+    {
+        ModelState.AddModelError("", "Invalid password reset token");
+    }
+    return View();
+}
+
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+
+        if (user != null)
+        {
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+            if (result.Succeeded)
+            {
+                return View("ResetPasswordConfirmation");
+            }
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+            return View(model);
+        }
+        return View("ResetPasswordConfirmation");
+    }
+    return View(model);
+}
+```
+
+**Reset Password Confirmation View**
+
+```HTML
+<h4>
+    Your password is reset. Please click <a asp-action="Login">here to login</a>
+</h4>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
