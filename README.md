@@ -97,6 +97,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 89. [Ep 108 - Create Facebook OAuth Credentials](#ep-108---create-facebook-oauth-credentials)
 90. [Ep 110 - Secret Manager in .Net Core MVC](#ep-110---secret-manager-in-net-core-mvc)
 91. [Ep 112 - Block Unconfirmed Email in .Net Core MVC](#ep-112---block-unconfirmed-email-in-net-core-mvc)
+92. [Ep 113 - Email Confirmation in .Net Core MVC](#ep-113---email-confirmation-in-net-core-mvc)
 
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -8131,7 +8132,6 @@ public async Task<IActionResult> Register(RegisterViewModel model)
         }
     }
     return View(model);
-}
 }
 ```
 
