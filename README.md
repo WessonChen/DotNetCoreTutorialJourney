@@ -8172,7 +8172,7 @@ public async Task<IActionResult> ConfirmEmail(string userId, string token)
 
 **ExternalLoginCallback**
 
-We add the same content 
+We add the same content for external login.
 
 ```C#
 //Codes
