@@ -98,6 +98,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 90. [Ep 110 - Secret Manager in .Net Core MVC](#ep-110---secret-manager-in-net-core-mvc)
 91. [Ep 112 - Block Unconfirmed Email in .Net Core MVC](#ep-112---block-unconfirmed-email-in-net-core-mvc)
 92. [Ep 113 - Email Confirmation in .Net Core MVC](#ep-113---email-confirmation-in-net-core-mvc)
+93. [Ep 115 - Forgot Password in .Net Core MVC](#ep-115---forgot-password-in-net-core-mvc)
 
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -8203,18 +8204,100 @@ We will discuss how to send the email confirmation link in an email later.
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 115 - [Forgot Password in .Net Core MVC](https://www.youtube.com/watch?v=0W0yAz7fu04&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=115)
 
+**Forgot Password link**
 
+```HTML
+<div>
+    <a asp-action="ForgotPassword">Forgot Password?</a>
+</div>
+```
 
+**Forgot Password View Model**
 
+```C#
+using System.ComponentModel.DataAnnotations;
 
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class ForgotPasswordViewModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+    }
+}
+```
 
+**Forgot Password View**
 
+```HTML
+@model ForgotPasswordViewModel
 
+<h2>Forgot Password</h2>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form method="post">
+            <div class="form-group">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+```
 
+**Actions**
 
+```C#
+[HttpGet]
+[AllowAnonymous]
+public IActionResult ForgotPassword()
+{
+    return View();
+}
+```
 
+```C#
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
 
+        if (user != null && await _userManager.IsEmailConfirmedAsync(user))
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var passwordResetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
+            _logger.Log(LogLevel.Warning, passwordResetLink);
+        }
+
+        // To avoid account enumeration and brute force attacks, don't
+        // reveal that the user does not exist or is not confirmed
+        return View("ForgotPasswordConfirmation");
+    }
+
+    return View(model);
+}
+```
+
+**ForgotPasswordConfirmation View**
+
+```HTML
+<h4>
+    If you have an account with us, we have sent an email
+    with the instructions to reset your password.
+</h4>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
