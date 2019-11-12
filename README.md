@@ -93,6 +93,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 85. [Ep 102 - Multiple Custom Authorization Handlers for a Requirement in .Net Core MVC](#ep-102---multiple-custom-authorization-handlers-for-a-requirement-in-net-core-mvc)
 86. [Ep 103 - Custom Authorization Handler Success vs Failure in .Net Core MVC](#ep-103---custom-authorization-handler-success-vs-failure-in-net-core-mvc)
 87. [Ep 105 - Create Google OAuth Credentials](#ep-105---create-google-oauth-credentials)
+88. [Ep 107 - ExternalLoginCallback Action in .Net Core MVC](#ep-107---externallogincallback-action-in-net-core-mvc)
 
  
 ## Notes
@@ -7528,7 +7529,7 @@ public async Task<IActionResult> Login(string returnUrl)
 - This submit button is inside a form. The form method attribute value is post and asp-action attribute value is `ExternalLogin`
 - So when the submit button is clicked the form is posted to `ExternalLogin` action in `AccountController`
 - The login provider is Google, so in the foreach loop, `provider.Name` returns Google.
-- Since the button name is set to provider, asp.net core model binding maps the provider name which is Google to `provider` parameter on the `ExternalLogin` action.
+- Since the button name is set to `provider`, asp.net core model binding maps the `provider` name which is Google to `provider` parameter on the `ExternalLogin` action.
 
 **ExternalLogin action in AccountController**
 
@@ -7537,22 +7538,108 @@ public async Task<IActionResult> Login(string returnUrl)
 [HttpPost]
 public IActionResult ExternalLogin(string provider, string returnUrl)
 {
-    var redirectUrl = Url.Action("ExternalLoginCallback", "Account",
-                        new { ReturnUrl = returnUrl });
-    var properties = signInManager
-        .ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+    var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
+    var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
     return new ChallengeResult(provider, properties);
 }
 ```
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 107 - [ExternalLoginCallback Action in .Net Core MVC](https://www.youtube.com/watch?v=vkB2yaV7_LQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=107)
 
+The following is the `ExternalLogin` action in `AccountController` that redirects the user to the external login provider sign-in page, 
+in this case **Google**. We discussed this in detail in the last note. 
 
+```C#
+[AllowAnonymous]
+[HttpPost]
+public IActionResult ExternalLogin(string provider, string returnUrl)
+{
+    var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
+    var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+    return new ChallengeResult(provider, properties);
+}
+```
 
+Upon successful authentication, **Google** redirects the user back to our application 
+and the following `ExternalLoginCallback` action is executed.
 
+```C#
+[AllowAnonymous]
+public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+{
+    returnUrl = returnUrl ?? Url.Content("~/");
 
+    LoginViewModel loginViewModel = new LoginViewModel
+    {
+        ReturnUrl = returnUrl,
+        ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
+    };
 
+    if (remoteError != null)
+    {
+        ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
+
+        return View("Login", loginViewModel);
+    }
+
+    // Get the login information about the user from the external login provider
+    var info = await _signInManager.GetExternalLoginInfoAsync();
+    if (info == null)
+    {
+        ModelState.AddModelError(string.Empty, "Error loading external login information.");
+
+        return View("Login", loginViewModel);
+    }
+
+    // If the user already has a login (i.e if there is a record in AspNetUserLogins
+    // table) then sign-in the user with this external login provider
+    var signInResult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
+    if (signInResult.Succeeded)
+    {
+        return LocalRedirect(returnUrl);
+    }
+    // If there is no record in AspNetUserLogins table, the user may not have
+    // a local account
+    else
+    {
+        // Get the email claim value
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+
+        if (email != null)
+        {
+            // Create a new user without password if we do not have a user already
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                user = new AppUser
+                {
+                    UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
+                    Email = info.Principal.FindFirstValue(ClaimTypes.Email)
+                };
+
+                await _userManager.CreateAsync(user);
+            }
+
+            // Add a login (i.e insert a row for the user in AspNetUserLogins table)
+            await _userManager.AddLoginAsync(user, info);
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+            return LocalRedirect(returnUrl);
+        }
+
+        // If we cannot find the user email we cannot continue
+        ViewBag.ErrorTitle = $"Email claim not received from: {info.LoginProvider}";
+
+        return View("Error");
+    }
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
