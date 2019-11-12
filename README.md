@@ -95,7 +95,8 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 87. [Ep 105 - Create Google OAuth Credentials](#ep-105---create-google-oauth-credentials)
 88. [Ep 107 - ExternalLoginCallback Action in .Net Core MVC](#ep-107---externallogincallback-action-in-net-core-mvc)
 89. [Ep 108 - Create Facebook OAuth Credentials](#ep-108---create-facebook-oauth-credentials)
- 
+90. [Ep 110 - Secret Manager in .Net Core MVC](#ep-110---secret-manager-in-net-core-mvc)
+
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
 
@@ -7714,619 +7715,151 @@ they will be logged into the same local account.
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 110 - [Secret Manager in .Net Core MVC](https://www.youtube.com/watch?v=TVF9o5qbrkI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=110)
 
+**Why you should not store secrets in configuration files**
 
+We usually store database connection strings, third party service credentials, API and encryption keys in configuration files 
+like `web.config` in asp.net and `appSettings.json` in asp.net core. 
 
+**These configuration files are part of the project**. So when they are committed to the source control repository, 
+everyone who has access to the repository will have access to the sensitive data in these files and could be misused. 
 
+**Use of Secret Manager**
 
+Secret Manager allows developers to store and retrieve sensitive data during the development of an ASP.NET Core application. 
+It stores sensitive data i.e user secrets in a file with name `secrets.json`. 
 
+To add this file to your project, right click on the project name in Solution Explorer in Visual Studio 
+and select **Manage User Secrets** from the context menu. This adds `secrets.json` file.  
 
+The structure of this file is similar to `appSettings.json`. The important point to keep in mind is, **this file is not part of the project folder**. 
+It is located outside of the project folder at the following path. 
 
+> C:\Users\{UserName}\AppData\Roaming\Microsoft\UserSecrets\{ID} 
 
+- `{UserName}` is the windows user name that you use to log into the computer.
+- `{ID}` is a GUID (Globally Unique Identifier)
 
+`UserSecretsId` node is included in the `.csproj` file.
 
+```json
+<PropertyGroup>
+  <UserSecretsId>5983324d-0d8c-4c4e-9222-b1d4eb382f58</UserSecretsId>
+</PropertyGroup>
+```
 
+A given secrets.json file can be shared by multiple projects 
 
+**Using Secret Manager to store database connection string**
 
+From best practices standpoint, we do not want to store database connecting strings anymore in `appSettings.json` file. 
+So, move the following database connection string from `appSettings.json` file to `secrets.json` file.
 
+```json
+{
+  "ConnectionStrings": {
+    "EmployeeDBConnection": 
+      "server=(localdb)\\MSSQLLocalDB;database=EmployeeDB;Trusted_Connection=true"
+  }
+}
+```
 
+**Access secrets from Secrets.json file**
 
+In ASP.NET Core application configuration settings can come from different configuration sources like 
+- appsettings.json
+- User secrets
+- Environment variables
+- Command-line arguments
 
+We discussed `appSettings.json` file in Ep 9 and Environment variables in Ep 14 
 
+Out of the box, `IConfiguration` service is setup to read configuration information from all the various configuration sources in asp.net core. 
+For example, to read the database connection string from `secrets.json` file, inject and use `IConfiguration` service. 
 
+```C#
+public class Startup
+{
+    private IConfiguration _config;
 
+    public Startup(IConfiguration config)
+    {
+        _config = config;
+    }
 
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddDbContextPool<AppDbContext>(options =>
+        options.UseSqlServer(_config.GetConnectionString("EmployeeDBConnection")));
 
+        // Rest of the code
+    }
+}
+```
 
+Please note that, if you have a configuration setting with the same key in multiple configuration sources, 
+**the later configuration sources override the earlier configuration sources**
 
+`CreateDefaultBuilder()` method of the `WebHost` class which is automatically invoked when the application starts, 
+reads the configuration sources **in a specific order**. [Here](https://github.com/aspnet/MetaPackages/blob/release/2.1/src/Microsoft.AspNetCore/WebHost.cs) is the source code.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```C#
+public static IWebHostBuilder CreateDefaultBuilder(string[] args)
+{
+    var builder = new WebHostBuilder()
+        .UseKestrel((builderContext, options) =>
+        {
+            options.Configure(builderContext.Configuration.GetSection("Kestrel"));
+        })
+        .UseContentRoot(Directory.GetCurrentDirectory())
+        .ConfigureAppConfiguration((hostingContext, config) =>
+        {
+            var env = hostingContext.HostingEnvironment;
+
+            config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
+            if (env.IsDevelopment())
+            {
+                var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+                if (appAssembly != null)
+                {
+                    config.AddUserSecrets(appAssembly, optional: true);
+                }
+            }
+
+            config.AddEnvironmentVariables();
+
+            //Codes
+        })
+		//Codes
+		;
+
+    //Codes
+
+    return builder;
+}
+```
+
+**User secrets in production**
+
+To protect sensitive data, secrets.json file is deliberately kept outside of the project folder. 
+This file is not checked into source control repository. 
+This means secrets.json file is not copied onto the production server, when we actually build and deploy.
+
+Well, on a production server store the database connection string in an environment variable. 
+If you remember, `IConfiguration` service is setup to read configuration information from all the following configuration sources. 
+- appsettings.json
+- User secrets
+- Environment variables
+- Command-line argument
+
+Secret Manager isn't for staging or production server, it should only be used on development machine. 
+For production always use either environment variables, Azure Key Vault, 
+or 3rd party production secret management system.
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
