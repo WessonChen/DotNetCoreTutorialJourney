@@ -8170,6 +8170,34 @@ public async Task<IActionResult> ConfirmEmail(string userId, string token)
 <h3>Thank you for confirming your email</h3>
 ```
 
+**ExternalLoginCallback**
+
+We add the same content 
+
+```C#
+//Codes
+if (user == null)
+{
+    user = new AppUser
+    {
+        UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
+        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
+    };
+
+    await _userManager.CreateAsync(user);
+
+    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
+    _logger.Log(LogLevel.Warning, confirmationLink);
+
+    ViewBag.ErrorTitle = "Registration successful";
+    ViewBag.ErrorMessage = "Before you can Login, please confirm your " +
+        "email, by clicking on the confirmation link we have emailed you";
+    return View("Error");
+}
+//Codes
+```
+
 At the moment we are logging the email confirmation link to a file. 
 We will discuss how to send the email confirmation link in an email later.
 
