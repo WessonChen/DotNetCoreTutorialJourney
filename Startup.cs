@@ -34,7 +34,9 @@ namespace DotNetCoreTutorialJourney
                 options.Password.RequireNonAlphanumeric = false;
 
                 options.SignIn.RequireConfirmedEmail = true;
-            }).AddEntityFrameworkStores<AppDbContext>();
+            })
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
             services.AddMvc(config =>
             {

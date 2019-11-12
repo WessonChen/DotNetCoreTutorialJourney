@@ -7864,7 +7864,7 @@ or 3rd party production secret management system.
 
 ### Ep 112 - [Block Unconfirmed Email in .Net Core MVC](https://www.youtube.com/watch?v=4XugKqgwGnU&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=112)
 
-**why email confirmation is important**
+**Why email confirmation is important**
 
 1. Prevents accidental account hijacking
 
@@ -8048,20 +8048,132 @@ public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, 
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 113 - [Email Confirmation in .Net Core MVC](https://www.youtube.com/watch?v=yRP6C7fhAuE&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=113)
 
+**Generate email confirmation token**
 
+In ASP.NET core generating email confirmation token is straight forward. Use `UserManager` service `GenerateEmailConfirmationTokenAsync()` method. 
+This method takes one parameter. The user for whom we want to generate the email confirmation token. 
 
+```C#
+var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+```
 
+In `ConfigureServices()` method of the `Startup` class, call `AddDefaultTokenProviders()` method to add the asp.net core default token providers 
+that generate tokens for email confirmation, password reset, two factor authentication etc. 
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        options.SignIn.RequireConfirmedEmail = true;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+}
+```
 
+You should add, either the default token providers or your own custom token providers that can generate tokens. 
+Otherwise you would get the following runtime exception. 
+> NotSupportedException: No IUserTwoFactorTokenProvider<TUser> named 'Default' is registered.
 
+**Build the email confirmation link**
 
+Once we have the **token** generated, build the **email confirmation link**. The user simply clicks this link to confirm his email. 
+This link executes, `ConfirmEmail` action in `Account` controller. The **user ID** and the **email confirmation token** are passed in the query string. 
+Model binding in ASP.NET core maps the values from the query string parameters to the respective parameters on the `ConfirmEmail` action. 
 
+```C#
+var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
+```
 
+The generated confirmation link would look like the following 
+> https://localhost:44304/Account/ConfirmEmail?userId=987009e3-7f78-445e-8bb8-4400ba886550&token=CfDJ8Hpirs
 
+The last parameter Request.Scheme returns the request protocol such as Http or Https. 
+This parameter is required to generate the full absolute URL. 
+If this parameter is not specified, a relative URL like the following will be generated. 
+> /Account/ConfirmEmail?userId=987009e3-7f78-445e-8bb8-4400ba886550&token=CfDJ8Hpirs
 
+**Register Action**
 
+```C#
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> Register(RegisterViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var user = new AppUser { UserName = model.Email, Email = model.Email, Gender = model.Gender};
+        var result = await _userManager.CreateAsync(user, model.Password);
 
+        if (result.Succeeded)
+        {
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
+            _logger.Log(LogLevel.Warning, confirmationLink);
+
+            if (_signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+            {
+                return RedirectToAction("ListUsers", "Administration");
+            }
+
+            ViewBag.ErrorTitle = "Registration successful";
+            ViewBag.ErrorMessage = "Before you can Login, please confirm your " +
+                    "email, by clicking on the confirmation link we have emailed you";
+            return View("Error");
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+    }
+    return View(model);
+}
+}
+```
+
+**ConfirmEmail Action**
+
+```C#
+[AllowAnonymous]
+public async Task<IActionResult> ConfirmEmail(string userId, string token)
+{
+    if (userId == null || token == null)
+    {
+        return RedirectToAction("index", "home");
+    }
+
+    var user = await _userManager.FindByIdAsync(userId);
+    if (user == null)
+    {
+        ViewBag.ErrorMessage = $"The User ID {userId} is invalid";
+        return View("NotFound");
+    }
+
+    var result = await _userManager.ConfirmEmailAsync(user, token);
+    if (result.Succeeded)
+    {
+        return View();
+    }
+
+    ViewBag.ErrorTitle = "Email cannot be confirmed";
+    return View("Error");
+}
+```
+
+**ConfirmEmail View**
+
+```HTML
+<h3>Thank you for confirming your email</h3>
+```
+
+At the moment we are logging the email confirmation link to a file. 
+We will discuss how to send the email confirmation link in an email later.
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
