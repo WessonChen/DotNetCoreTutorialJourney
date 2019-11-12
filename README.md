@@ -96,6 +96,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 88. [Ep 107 - ExternalLoginCallback Action in .Net Core MVC](#ep-107---externallogincallback-action-in-net-core-mvc)
 89. [Ep 108 - Create Facebook OAuth Credentials](#ep-108---create-facebook-oauth-credentials)
 90. [Ep 110 - Secret Manager in .Net Core MVC](#ep-110---secret-manager-in-net-core-mvc)
+91. [Ep 112 - Block Unconfirmed Email in .Net Core MVC](#ep-112---block-unconfirmed-email-in-net-core-mvc)
 
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -7860,6 +7861,376 @@ For production always use either environment variables, Azure Key Vault,
 or 3rd party production secret management system.
 
 #### [Back to Table of Contents](#table-of-contents)
+
+### Ep 112 - [Block Unconfirmed Email in .Net Core MVC](https://www.youtube.com/watch?v=4XugKqgwGnU&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=112)
+
+**why email confirmation is important**
+
+1. Prevents accidental account hijacking
+
+Let's say for example, a user registered with our application with the email john@foo.com. 
+His actual email is jon@foo.com without the letter h. He made a typo and accidentally included the letter h in his email (john@foo.com). 
+Our application allowed the user to login and setup his account by providing all the personal, financial and other required details. 
+This user is using the application as normal and so far no problem. 
+
+After a few days, another user who actually owns the email john@foo.com (with the letter h in the email), tries to register with our application. 
+He will not be able to proceed with the registration as his email is already in use. So he requests for a password reset link, 
+which will be sent to his email. He clicks on the link and changes the password. 
+
+There are 2 problems here 
+- As the password is changed, the first user will no longer be able to login. 
+- When the second user logs-in he will have access to the first user personal, financial and other details.
+
+This is a huge concern from security standpoint. The second user is able to hijack the first user account. 
+We wouldn't have been in this situation if the email was confirmed upon registration. 
+
+2. Reduces spam registrations
+
+Email confirmation may not completely prevent spam registrations, but can reduce to a great extent.  
+
+Without email verification, you are opening gates to Spam bots. 
+A large number of spam accounts can be created by these spam bots with random emails.  
+
+3. Prevents unsolicited emails
+
+Without email confirmation, you would not know if the email provided during registration really belong to that user. 
+You may end up sending unsolicited emails, if a random email is used or mis-typed.
+
+4. Easy to recover account
+
+In most cases a confirmed email is the easiest method for account recovery, if a user has forgotten username and/or password. 
+
+**Block login if email is not confirmed**
+
+In ASP.NET core, application users are stored in `AspNetUsers` table. 
+`EmailConfirmed` column in this table is used to determine if a given email address is confirmed.
+
+<p align="center">
+  <img src="https://i.ibb.co/whgSpMT/block-login-if-email-is-not-confirmed-in-asp-net-core.png">
+</p>
+
+In `ConfigureServices()` method of the Startup class, set `RequireConfirmedEmail` property to true. 
+
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        options.SignIn.RequireConfirmedEmail = true;
+    })
+    .AddEntityFrameworkStores<AppDbContext>();
+}
+```
+
+**Login action in AccountController**
+
+```C#
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
+{
+    model.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+    if (ModelState.IsValid)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+
+        if (user != null && !user.EmailConfirmed && (await _userManager.CheckPasswordAsync(user, model.Password)))
+        {
+            ModelState.AddModelError(string.Empty, "Email not confirmed yet");
+            return View(model);
+        }
+
+        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+
+        if (result.Succeeded)
+        {
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+            return RedirectToAction("index", "home");
+        }
+
+        ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+    }
+    return View(model);
+}
+```
+
+We also want to block the login if an external login account (like Facebook, Google etc) is used 
+and the email address associated with that external account is not confirmed. 
+
+**ExternalLoginCallback action in AccountController**
+
+```C#
+[AllowAnonymous]
+public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+{
+    returnUrl = returnUrl ?? Url.Content("~/");
+
+    LoginViewModel loginViewModel = new LoginViewModel
+    {
+        ReturnUrl = returnUrl,
+        ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
+    };
+
+    if (remoteError != null)
+    {
+        ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
+
+        return View("Login", loginViewModel);
+    }
+
+    // Get the login information about the user from the external login provider
+    var info = await _signInManager.GetExternalLoginInfoAsync();
+    if (info == null)
+    {
+        ModelState.AddModelError(string.Empty, "Error loading external login information.");
+
+        return View("Login", loginViewModel);
+    }
+
+    // Get the email claim from external login provider (Google, Facebook etc)
+    var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+    AppUser user = null;
+
+    if (email != null)
+    {
+        // Find the user
+        user = await _userManager.FindByEmailAsync(email);
+
+        // If email is not confirmed, display login view with validation error
+        if (user != null && !user.EmailConfirmed)
+        {
+            ModelState.AddModelError(string.Empty, "Email not confirmed yet");
+            return View("Login", loginViewModel);
+        }
+    }
+
+    // If the user already has a login (i.e if there is a record in AspNetUserLogins
+    // table) then sign-in the user with this external login provider
+    var signInResult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
+    if (signInResult.Succeeded)
+    {
+        return LocalRedirect(returnUrl);
+    }
+    // If there is no record in AspNetUserLogins table, the user may not have
+    // a local account
+    else
+    {
+        if (email != null)
+        {
+            if (user == null)
+            {
+                user = new AppUser
+                {
+                    UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
+                    Email = info.Principal.FindFirstValue(ClaimTypes.Email)
+                };
+
+                await _userManager.CreateAsync(user);
+            }
+
+            // Add a login (i.e insert a row for the user in AspNetUserLogins table)
+            await _userManager.AddLoginAsync(user, info);
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+            return LocalRedirect(returnUrl);
+        }
+
+        // If we cannot find the user email we cannot continue
+        ViewBag.ErrorTitle = $"Email claim not received from: {info.LoginProvider}";
+
+        return View("Error");
+    }
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
