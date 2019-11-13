@@ -102,6 +102,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 94. [Ep 116 - Reset Password in .Net Core MVC](#ep-116---reset-password-in-net-core-mvc)
 95. [Ep 117 - How Tokens Are Generated and Validated in .Net Core MVC](#ep-117---how-tokens-are-generated-and-validated-in-net-core-mvc)
 96. [Ep 118 - Token Lifetime in .Net Core MVC](#ep-118---token-lifetime-in-net-core-mvc)
+97. [Ep 120 - Encryption and Decryption in .Net Core MVC](#ep-120---encryption-and-decryption-in-net-core-mvc)
 
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -8641,8 +8642,7 @@ namespace DotNetCoreTutorialJourney.Security
         public CustomEmailConfirmationTokenProvider(IDataProtectionProvider dataProtectionProvider,
                                         IOptions<CustomEmailConfirmationTokenProviderOptions> options)
             : base(dataProtectionProvider, options)
-        {
-		}
+        {}
     }
 }
 ```
@@ -8673,47 +8673,161 @@ public void ConfigureServices(IServiceCollection services)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 120 - [Encryption and Decryption in .Net Core MVC](https://www.youtube.com/watch?v=HlHDTQhVYoI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=120)
 
+It is the Data Protection API (DP API in short), that we will be using for our encryption needs.
 
+<p align="center">
+  <img src="https://i.ibb.co/rHWqkVZ/asp-net-core-encryption-and-decryption-example.png">
+</p>
 
+Let's understand encrypting route values with an example. To view a specific employee details the following is the URL we use. 
+The integer value (5) in the URL at the end is the ID of the employee.
 
+> https://localhost:1111/home/details/5
 
+We want to encrypt, so it's not readable.
 
+> https://localhost:44376/home/details/CfDJ8J-n2P...
 
+Take a look at the asp.net core `DataProtectorTokenProvider` class [source code](https://github.com/aspnet/Identity/blob/release/2.1/src/Identity/DataProtectionTokenProvider.cs).
 
+It is this class that generates email confirmation token, password reset token etc. It is also responsible for encrypting and decrypting these tokens. 
 
+We use `Protect()` and `Unprotect()` methods of `IDataProtector` interface to encrypt and decrypt respectively.
 
+**Create purpose string**
 
+This class holds the purpose strings required for encryption and decryption. At the moment we have, only one, purpose string.
 
+```C#
+namespace DotNetCoreTutorialJourney.Security
+{
+    public class DataProtectionPurposeStrings
+    {
+        public readonly string EmployeeIdRouteValue = "EmployeeIdRouteValue";
+    }
+}
+```
 
+**Register purpose string class with DI container**
 
+Register the class that contains purpose strings with the asp.net core dependency injection container. 
+This allows us to inject an instance of this class into any controller throughout our application. 
+`ConfigureServices` method is in the `Startup` class.
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddSingleton<DataProtectionPurposeStrings>();
+}
+```
 
+**Model property to hold encrypted ID**
 
+As the name implies, `EncryptedId` property holds the encrypted employee id. 
+`NotMapped` attribute specifies that this property must be excluded from mapping it to a database table column. 
+`NotMapped` attribute is in `System.ComponentModel.DataAnnotations.Schema` namespace.
 
+```C#
+public class Employee
+{
+    public int Id { get; set; }
 
+    [NotMapped]
+    public string EncryptedId { get; set; }
 
+    // rest of the properties
+}
+```
 
+**IDataProtector Protect and Unprotect methods**
 
+`IDataProtector` is required in the `HomeController`. In this `Index()` action we encrypt the employee id values and in the `Details()` they are decrypted.
 
+```C#
+namespace DotNetCoreTutorialJourney.Controllers
+{
+    public class HomeController : Controller
+    {
+        private readonly IEmployeeRepository _employeeRepository;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
+		// It is through IDataProtector interface Protect and Unprotect methods,
+        // we encrypt and decrypt respectively
+        private readonly IDataProtector _dataProtector;
 
+		// It is the CreateProtector() method of IDataProtectionProvider interface
+        // that creates an instance of IDataProtector. CreateProtector() requires
+        // a purpose string. So both IDataProtectionProvider and the class that
+        // contains our purpose strings are injected using the contructor
+        public HomeController(IEmployeeRepository employeeRepository, 
+                              IHostingEnvironment hostingEnvironment,
+                              IDataProtectionProvider dataProtectionProvider,
+                              DataProtectionPurposeStrings dataProtectionPurposeStrings)
+        {
+            _employeeRepository = employeeRepository;
+            _hostingEnvironment = hostingEnvironment;
+            _dataProtector = dataProtectionProvider.CreateProtector(dataProtectionPurposeStrings.EmployeeIdRouteValue);
+        }
 
+        [AllowAnonymous]
+        public ViewResult Index()
+        {
+            return View(_employeeRepository.GetAllEmployee()
+                            .Select(e => {
+                                e.EncryptedId = _dataProtector.Protect(e.Id.ToString());
+                                return e;
+                            }));
+        }
 
+        [AllowAnonymous]
+        public ViewResult Details(string id)
+        {
+            int employeeId = Convert.ToInt32(_dataProtector.Unprotect(id));
 
+            Employee employee = _employeeRepository.GetEmployee(employeeId);
+            if (employee == null)
+            {
+                Response.StatusCode = 404;
+                return View("EmployeeNotFound", employeeId);
+            }
+            return View(employee);
+        }
+    }
+}
+```
 
+**Encrypted ID in View**
 
+In the view, bind the EncryptedId to the View action link.
 
+```HTML
+<div class="card-deck">
+    @foreach (var employee in Model)
+    {
+        <div class="card-footer text-center">
+            <a asp-controller="home" asp-action="details"
+               asp-route-id="@employee.EncryptedId"
+               class="btn btn-primary m-1">View</a>
+        </div>
+    }
+</div>
+```
 
+**Purpose string in ASP.NET Core**
 
+<p align="center">
+  <img src="https://i.ibb.co/rHWqkVZ/asp-net-core-encryption-and-decryption-example.png">
+</p>
 
+You can think of purpose string as an encryption key. This key is then combined with the master or root key to generate a unique key. 
+The data that is encrypted by a given combination of purpose string and root key can only be decrypted by that same combination of keys.
 
+The purpose string is inherent to the security of the data protection system, 
+as it provides isolation between cryptographic consumers, even if the root keys are the same.
 
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
