@@ -105,6 +105,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 97. [Ep 120 - Encryption and Decryption in .Net Core MVC](#ep-120---encryption-and-decryption-in-net-core-mvc)
 98. [Ep 121 - Change Password in .Net Core MVC](#ep-121---change-password-in-net-core-mvc)
 99. [Ep 122 - Add Password to Local Account Linked to External Login in .Net Core MVC](#ep-122---add-password-to-local-account-linked-to-external-login-in-net-core-mvc)
+100. [Ep 123 - Account Lockout in .Net Core MVC](#ep-123---account-lockout-in-net-core-mvc)
 
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -9119,47 +9120,125 @@ public async Task<IActionResult> ChangePassword()
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 123 - [Account Lockout in .Net Core MVC](https://www.youtube.com/watch?v=jHRWR36UC2s&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=123)
 
+**Configure account lockout options**
 
+Account lockout options are configured in `ConfigureServices()` method of the `Startup` class.
 
+- `MaxFailedAccessAttempts` - Specifies the number of failed logon attempts allowed before the account is locked out. The default is 5.
+- `DefaultLockoutTimeSpan` - Specifies the amount of the time the account should be locked. The default it 5 minutes.
 
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    });
 
+    // Rest of the code
+}
+```
 
+**Enable account lockout**
 
+Modify the code in `Login()` action in `AccountController` to enable account lockout. The code is commented where required.
 
+```C#
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
+{
+    model.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
+    if (ModelState.IsValid)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
 
+        if (user != null && !user.EmailConfirmed && (await _userManager.CheckPasswordAsync(user, model.Password)))
+        {
+            ModelState.AddModelError(string.Empty, "Email not confirmed yet");
+            return View(model);
+        }
 
+        // The last boolean parameter lockoutOnFailure indicates if the account
+        // should be locked on failed logon attempt. On every failed logon
+        // attempt AccessFailedCount column value in AspNetUsers table is
+        // incremented by 1. When the AccessFailedCount reaches the configured
+        // MaxFailedAccessAttempts which in our case is 5, the account will be
+        // locked and LockoutEnd column is populated. After the account is
+        // lockedout, even if we provide the correct username and password,
+        // PasswordSignInAsync() method returns Lockedout result and the login
+        // will not be allowed for the duration the account is locked.
+        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, true);
 
+        if (result.Succeeded)
+        {
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+            return RedirectToAction("index", "home");
+        }
 
+        // If account is lockedout send the use to AccountLocked view
+        if (result.IsLockedOut)
+        {
+            return View("AccountLocked");
+        }
 
+        ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+    }
+    return View(model);
+}
+```
 
+**Account Locked View**
 
+```HTML
+<h3 class="text-danger">
+    Your account is locked, please try again after sometime or you may
+    <a asp-action="ForgotPassword" asp-controller="Account">
+        reset your password by clicking here
+    </a>
+</h3>
+```
 
+**Set lockout end date on successful password reset**
 
+```C#
+[HttpPost]
+[AllowAnonymous]
+public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
 
+        if (user != null)
+        {
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+            if (result.Succeeded)
+            {
+                // Upon successful password reset and if the account is lockedout, set
+                // the account lockout end date to current UTC date time, so the user
+                // can login with the new password
+                if (await _userManager.IsLockedOutAsync(user))
+                {
+                    await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow);
+                }
+                return View("ResetPasswordConfirmation");
+            }
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+            return View(model);
+        }
+        return View("ResetPasswordConfirmation");
+    }
+    return View(model);
+}
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#### [Back to Table of Contents](#table-of-contents)

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -278,7 +279,7 @@ namespace DotNetCoreTutorialJourney.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ViewResult> Login(string returnUrl)
+        public async Task<IActionResult> Login(string returnUrl)
         {
             LoginViewModel model = new LoginViewModel
             {
@@ -304,13 +305,28 @@ namespace DotNetCoreTutorialJourney.Controllers
                     return View(model);
                 }
 
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+                // The last boolean parameter lockoutOnFailure indicates if the account
+                // should be locked on failed logon attempt. On every failed logon
+                // attempt AccessFailedCount column value in AspNetUsers table is
+                // incremented by 1. When the AccessFailedCount reaches the configured
+                // MaxFailedAccessAttempts which in our case is 5, the account will be
+                // locked and LockoutEnd column is populated. After the account is
+                // lockedout, even if we provide the correct username and password,
+                // PasswordSignInAsync() method returns Lockedout result and the login
+                // will not be allowed for the duration the account is locked.
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, true);
 
                 if (result.Succeeded)
                 {
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                         return Redirect(returnUrl);
                     return RedirectToAction("index", "home");
+                }
+
+                // If account is lockedout send the use to AccountLocked view
+                if (result.IsLockedOut)
+                {
+                    return View("AccountLocked");
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
@@ -387,6 +403,13 @@ namespace DotNetCoreTutorialJourney.Controllers
                     var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
                     if (result.Succeeded)
                     {
+                        // Upon successful password reset and if the account is lockedout, set
+                        // the account lockout end date to current UTC date time, so the user
+                        // can login with the new password
+                        if (await _userManager.IsLockedOutAsync(user))
+                        {
+                            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow);
+                        }
                         return View("ResetPasswordConfirmation");
                     }
                     foreach (var error in result.Errors)
