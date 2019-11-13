@@ -97,8 +97,11 @@
                     @if (_signinmanager.IsSignedIn(User))
                     {
                         <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
+                        </li>
+                        <li class="nav-item">
                             <form method="post" asp-controller="account" asp-action="logout">
-                                <button type="submit" class="nav-link btn btn-link py-0" style="width: auto">
+                                <button type="submit" class="nav-link btn btn-link" style="width: auto; border: 0">
                                     Logout @User.Identity.Name
                                 </button>
                             </form>

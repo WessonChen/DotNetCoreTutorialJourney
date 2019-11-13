@@ -103,6 +103,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 95. [Ep 117 - How Tokens Are Generated and Validated in .Net Core MVC](#ep-117---how-tokens-are-generated-and-validated-in-net-core-mvc)
 96. [Ep 118 - Token Lifetime in .Net Core MVC](#ep-118---token-lifetime-in-net-core-mvc)
 97. [Ep 120 - Encryption and Decryption in .Net Core MVC](#ep-120---encryption-and-decryption-in-net-core-mvc)
+98. [Ep 121 - Change Password in .Net Core MVC](#ep-121---change-password-in-net-core-mvc)
 
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -8829,21 +8830,154 @@ as it provides isolation between cryptographic consumers, even if the root keys 
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 121 - [Change Password in .Net Core MVC](https://www.youtube.com/watch?v=r7VzoLhFLd0&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=121)
 
+**UserManager ChangePasswordAsync Method**
 
+```C#
+var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+```
 
+It is the `ChangePasswordAsync()` method of the `UserManager` service that we use to change a logged-in user password. 
+This method takes 3 parameters.
+1. The logged-in user whose password is being changed
+2. Current password
+3. New password
 
+**SignInManager RefreshSignInAsync() Method**
 
+```C#
+await _signInManager.RefreshSignInAsync(user);
+```
 
+Call SignInManager service `RefreshSignInAsync()` method, after the password is successfully changed. 
+As the name implies, this method refreshes the logged-in user sign-in cookie.
 
+**Change Password ViewModel**
 
+```C#
+using System.ComponentModel.DataAnnotations;
 
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class ChangePasswordViewModel
+    {
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "Current password")]
+        public string CurrentPassword { get; set; }
 
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "New password")]
+        public string NewPassword { get; set; }
 
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm new password")]
+        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; }
+    }
+}
+```
 
+**Change Password View**
 
+```HTML
+@model ChangePasswordViewModel
 
+<h2>Change Password</h2>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form method="post" autocomplete="off">
+            <div class="form-group">
+                <label asp-for="CurrentPassword"></label>
+                <input asp-for="CurrentPassword" class="form-control" />
+                <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NewPassword"></label>
+                <input asp-for="NewPassword" class="form-control" />
+                <span asp-validation-for="NewPassword" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmPassword"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+    </div>
+</div>
+```
 
+**Change Password Confirmation View**
+
+```HTML
+<h4>
+    Your password is successfully changed.
+</h4>
+```
+
+**ChangePassword Actions**
+
+```C#
+ [HttpGet]
+public IActionResult ChangePassword()
+{
+    return View();
+}
+
+[HttpPost]
+public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return View();
+        }
+
+        // Upon successfully changing the password refresh sign-in cookie
+        await _signInManager.RefreshSignInAsync(user);
+        return View("ChangePasswordConfirmation");
+    }
+    return View(model);
+}
+```
+
+**Change password menu item in Layout view**
+
+```HTML
+<ul class="navbar-nav ml-auto">
+    @if (_signinmanager.IsSignedIn(User))
+    {
+		<li class="nav-item">
+			<a class="nav-link" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
+		</li>
+		//Codes
+    }
+    else
+    {
+        //Codes
+    }
+</ul>
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
