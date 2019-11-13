@@ -8753,11 +8753,11 @@ namespace DotNetCoreTutorialJourney.Controllers
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IHostingEnvironment _hostingEnvironment;
 
-		// It is through IDataProtector interface Protect and Unprotect methods,
+        // It is through IDataProtector interface Protect and Unprotect methods,
         // we encrypt and decrypt respectively
         private readonly IDataProtector _dataProtector;
 
-		// It is the CreateProtector() method of IDataProtectionProvider interface
+        // It is the CreateProtector() method of IDataProtectionProvider interface
         // that creates an instance of IDataProtector. CreateProtector() requires
         // a purpose string. So both IDataProtectionProvider and the class that
         // contains our purpose strings are injected using the contructor
@@ -8818,7 +8818,7 @@ In the view, bind the EncryptedId to the View action link.
 **Purpose string in ASP.NET Core**
 
 <p align="center">
-  <img src="https://i.ibb.co/rHWqkVZ/asp-net-core-encryption-and-decryption-example.png">
+  <img src="https://i.ibb.co/KsFxB6T/asp-net-core-purpose-string.png">
 </p>
 
 You can think of purpose string as an encryption key. This key is then combined with the master or root key to generate a unique key. 
