@@ -104,6 +104,7 @@ by **[kudvenkat](https://www.youtube.com/channel/UCCTVrRB5KpIiK6V2GGVsR1Q)**
 96. [Ep 118 - Token Lifetime in .Net Core MVC](#ep-118---token-lifetime-in-net-core-mvc)
 97. [Ep 120 - Encryption and Decryption in .Net Core MVC](#ep-120---encryption-and-decryption-in-net-core-mvc)
 98. [Ep 121 - Change Password in .Net Core MVC](#ep-121---change-password-in-net-core-mvc)
+99. [Ep 122 - Add Password to Local Account Linked to External Login in .Net Core MVC](#ep-122---add-password-to-local-account-linked-to-external-login-in-net-core-mvc)
 
 ## Notes
 ### Ep 6 - [.Net Core in process hosting](https://www.youtube.com/watch?v=ydR2jd3ZaEA&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=6)
@@ -8965,10 +8966,10 @@ public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
 <ul class="navbar-nav ml-auto">
     @if (_signinmanager.IsSignedIn(User))
     {
-		<li class="nav-item">
-			<a class="nav-link" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
-		</li>
-		//Codes
+        <li class="nav-item">
+	        <a class="nav-link" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
+        </li>
+        //Codes
     }
     else
     {
@@ -8979,27 +8980,144 @@ public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
 
 #### [Back to Table of Contents](#table-of-contents)
 
+### Ep 122 - [Add Password to Local Account Linked to External Login in .Net Core MVC](https://www.youtube.com/watch?v=mCKdMgFv8MI&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=122)
 
+To add a password to a local user account that is linked to an external login, use `AddPasswordAsync()` method of the UserManager service.
 
+```C#
+_userManager.AddPasswordAsync(user, model.NewPassword);
+```
 
+**Add Password View Model**
 
+```C#
+using System.ComponentModel.DataAnnotations;
 
+namespace DotNetCoreTutorialJourney.ViewModels
+{
+    public class AddPasswordViewModel
+    {
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "New password")]
+        public string NewPassword { get; set; }
 
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm new password")]
+        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; }
+    }
+}
+```
 
+**Add Password View**
 
+```HTML
+@model AddPasswordViewModel
 
+<h2>Add Password</h2>
+<hr />
+<p class="text-info">
+    You have used an external account to login and do not have a local username and
+    password. Simply set a new password if you want to login using a local account.
+    Use your email as the username.
+</p>
+<div class="row">
+    <div class="col-md-12">
+        <form method="post" autocomplete="off">
+            <div class="form-group">
+                <label asp-for="NewPassword"></label>
+                <input asp-for="NewPassword" class="form-control" />
+                <span asp-validation-for="NewPassword" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmPassword"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger">
+                </span>
+            </div>
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <button type="submit" class="btn btn-primary" style="width:auto">
+                Set Password
+            </button>
+        </form>
+    </div>
+</div>
+```
 
+**Add Password Confirmation View**
 
+```HTML
+<h3>
+    You have successfully set a local password. You can now use either
+    your local user account or an external account to login
+</h3>
+```
 
+**AddPassword Actions**
 
+```C#
+[HttpGet]
+public async Task<IActionResult> AddPassword()
+{
+    var user = await _userManager.GetUserAsync(User);
 
+    var userHasPassword = await _userManager.HasPasswordAsync(user);
 
+    if (userHasPassword)
+    {
+        return RedirectToAction("ChangePassword");
+    }
 
+    return View();
+}
 
+[HttpPost]
+public async Task<IActionResult> AddPassword(AddPasswordViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        var user = await _userManager.GetUserAsync(User);
 
+        var result = await _userManager.AddPasswordAsync(user, model.NewPassword);
 
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return View();
+        }
 
+        await _signInManager.RefreshSignInAsync(user);
 
+        return View("AddPasswordConfirmation");
+    }
+    return View(model);
+}
+```
+
+Modify the code in HttpGet `ChangePassword()` action to redirect the user to `AddPassword()` action 
+if the user has singed in using an external login account and tries to change password.
+
+```C#
+[HttpGet]
+public async Task<IActionResult> ChangePassword()
+{
+    var user = await _userManager.GetUserAsync(User);
+
+    var userHasPassword = await _userManager.HasPasswordAsync(user);
+
+    if (!userHasPassword)
+    {
+        return RedirectToAction("AddPassword");
+    }
+    return View();
+}
+```
+
+#### [Back to Table of Contents](#table-of-contents)
 
 
 
