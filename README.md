@@ -8599,6 +8599,78 @@ In general email confirmation tokens can live a little longer than password rese
 For example, let's say we want to change the life span of email confirmation token to 3 days. 
 To achieve this we have to create a custom `DataProtectorTokenProvider` and `DataProtectionTokenProviderOptions`.
 
+**Create custom email confirmation token provider options**
+
+By default, it is the built-in `DataProtectionTokenProviderOptions` class that controls the token lifespan of all token types. 
+If you want to set a specific lifespan for just the email confirmation token type, create a `CustomEmailConfirmationTokenProviderOptions` class. 
+
+Make this custom class inherit from the built-in `DataProtectionTokenProviderOptions` class. There are 2 important reasons why we do this.
+1. The `TokenLifespan` property is inherited from the base class and
+2. It allows an instance of this class to be passed as an argument to the `DataProtectorTokenProvider` class.
+
+```C#
+using Microsoft.AspNetCore.Identity;
+
+namespace DotNetCoreTutorialJourney.Security
+{
+    public class CustomEmailConfirmationTokenProviderOptions : DataProtectionTokenProviderOptions
+    {
+
+    }
+}
+```
+
+**Create custom email confirmation token provider**
+
+It is the built-in `DataProtectorTokenProvider` class that generates the email confirmation token. 
+Our custom provider class gets all the functionality required to generate tokens by inheriting from the `DataProtectorTokenProvider` class. 
+We do not have to write any special logic in this custom provider class to generate tokens. 
+It will be taken care by the base `DataProtectorTokenProvider` class. All we need is a constructor which in turn calls the base class constructor. 
+Our `CustomEmailConfirmationTokenProviderOptions` instance is passed to the base class constructor.
+
+```C#
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+
+namespace DotNetCoreTutorialJourney.Security
+{
+    public class CustomEmailConfirmationTokenProvider<TUser>
+        : DataProtectorTokenProvider<TUser> where TUser : class
+    {
+        public CustomEmailConfirmationTokenProvider(IDataProtectionProvider dataProtectionProvider,
+                                        IOptions<CustomEmailConfirmationTokenProviderOptions> options)
+            : base(dataProtectionProvider, options)
+        {
+		}
+    }
+}
+```
+
+**Register custom token provider and Change email confirmation token lifespan**
+
+```C#
+public void ConfigureServices(IServiceCollection services)
+{
+    //Codes
+    services.AddIdentity<AppUser, IdentityRole>(options =>
+    {
+        //Codes
+
+        options.Tokens.EmailConfirmationTokenProvider = "CustomEmailConfirmation";
+    })
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders()
+        .AddTokenProvider<CustomEmailConfirmationTokenProvider<AppUser>>("CustomEmailConfirmation");
+
+    services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(5));
+
+    services.Configure<CustomEmailConfirmationTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromDays(3));
+
+    //Codes
+}
+```
+
 #### [Back to Table of Contents](#table-of-contents)
 
 

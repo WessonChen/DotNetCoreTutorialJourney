@@ -35,11 +35,16 @@ namespace DotNetCoreTutorialJourney
                 options.Password.RequireNonAlphanumeric = false;
 
                 options.SignIn.RequireConfirmedEmail = true;
+
+                options.Tokens.EmailConfirmationTokenProvider = "CustomEmailConfirmation";
             })
                 .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddTokenProvider<CustomEmailConfirmationTokenProvider<AppUser>>("CustomEmailConfirmation");
 
             services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(5));
+
+            services.Configure<CustomEmailConfirmationTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromDays(3));
 
             services.AddMvc(config =>
             {
